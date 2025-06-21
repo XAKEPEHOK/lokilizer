@@ -1,0 +1,68 @@
+{
+    "autoload": {
+        "files": [
+            "src/functions.php"
+        ],
+        "psr-4": {
+            "XAKEPEHOK\\Lokilizer\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "XAKEPEHOK\\Lokilizer\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "8.2.*",
+        "ext-zlib": "*",
+        "ext-redis": "*",
+        "ext-dom": "*",
+        "ext-libxml": "*",
+        "ext-mongodb": "*",
+        "ext-curl": "*",
+        "ext-pcntl": "*",
+        "ext-intl": "*",
+        "ext-mbstring": "*",
+        "ext-sodium": "*",
+        "dibify/dibify": "^0.11",
+        "dibify/id-generator-redis": "^0.11.0",
+        "dibify/locker-redis": "^0.11.0",
+        "dibify/storage-mongodb": "^0.11.0",
+        "dibify/migrations": "^0.3.0",
+        "slim/slim": "^4.5",
+        "slim/http": "^1.1",
+        "slim/psr7": "^1.7",
+        "php-di/slim-bridge": "^3.0",
+        "akrabat/ip-address-middleware": "^2.0",
+        "symfony/console": "^7.0",
+        "symfony/process": "^7.0",
+        "symfony/cache": "^7.0",
+        "symfony/intl": "^7.0",
+        "symfony/yaml": "^7.0",
+        "symfony/filesystem": "^7.2",
+        "league/plates": "^3.5",
+        "openai-php/client": "^0.10.2",
+        "league/uri": "^7.0",
+        "nyholm/psr7": "^1.8",
+        "xakepehok/path": "^0.2.6",
+        "vlucas/phpdotenv": "^5.6",
+        "guzzlehttp/guzzle": "^7.8",
+        "php-di/php-di": "^7.0",
+        "yiisoft/arrays": "^3.0",
+        "sentry/sentry": "^4.5",
+        "dflydev/fig-cookies": "^3.1",
+        "spomky-labs/otphp": "^10.0",
+        "prinsfrank/standards": "^3.3",
+        "php-dto/email-address": "^0.1.1",
+        "behat/transliterator": "^1.5"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5",
+        "mockery/mockery": "^1.6"
+    }
+}

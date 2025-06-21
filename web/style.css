@@ -1,0 +1,4 @@
+textarea.textarea-autosize {
+    overflow: hidden;
+    resize: none;
+}

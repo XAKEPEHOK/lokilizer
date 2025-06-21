@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  php-fpm:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  php-cli:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

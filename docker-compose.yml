@@ -1,0 +1,120 @@
+services:
+  mongo:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: mongo
+      args:
+        LOKILIZER_DOCKER_UID: ${LOKILIZER_DOCKER_UID}
+        LOKILIZER_DOCKER_GID: ${LOKILIZER_DOCKER_GID}
+    volumes:
+      - "./volumes/mongo/configdb:/data/configdb"
+      - "./volumes/mongo/data:/data/db"
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${LOKILIZER_MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${LOKILIZER_MONGO_PASSWORD}
+    networks:
+      - lokilizer-network
+
+  mongo-express-lokilizer:
+    image: 'mongo-express:1'
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${LOKILIZER_MONGO_USER}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${LOKILIZER_MONGO_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_SITE_BASEURL: "/mongo/"
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    networks:
+      - lokilizer-network
+
+  redis:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: redis
+      args:
+        LOKILIZER_DOCKER_UID: ${LOKILIZER_DOCKER_UID}
+        LOKILIZER_DOCKER_GID: ${LOKILIZER_DOCKER_GID}
+    restart: unless-stopped
+    volumes:
+      - "./volumes/redis:/data"
+    networks:
+      - lokilizer-network
+
+  lokilizer-nginx:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: nginx
+      args:
+        LOKILIZER_DOCKER_UID: ${LOKILIZER_DOCKER_UID}
+        LOKILIZER_DOCKER_GID: ${LOKILIZER_DOCKER_GID}
+    volumes:
+      - './docker/nginx/dev/templates:/etc/nginx/templates'
+      - './docker/nginx/dev/conf.d/server_names_hash_bucket_size.conf:/etc/nginx/conf.d/server_names_hash_bucket_size.conf'
+      - './docker/nginx/dev/conf.d/server_tokens.conf:/etc/nginx/conf.d/server_tokens.conf'
+      - './:/app'
+    restart: unless-stopped
+    depends_on:
+      - php-fpm
+    environment:
+      - 'NGINX_HOST="${PROJECT_DOMAIN}"'
+    ports:
+      - 9191:443
+    networks:
+      - lokilizer-network
+
+  php-fpm:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: php_fpm_dev
+      args:
+        LOKILIZER_DOCKER_UID: ${LOKILIZER_DOCKER_UID}
+        LOKILIZER_DOCKER_GID: ${LOKILIZER_DOCKER_GID}
+    volumes:
+      - './:/app'
+    restart: unless-stopped
+    depends_on:
+      - mongo
+      - redis
+    environment:
+      PHP_IDE_CONFIG: "serverName=lokilizer.local"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - lokilizer-network
+
+  php-cli:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: php_cli_dev
+      args:
+        LOKILIZER_DOCKER_UID: ${LOKILIZER_DOCKER_UID}
+        LOKILIZER_DOCKER_GID: ${LOKILIZER_DOCKER_GID}
+    deploy:
+      resources:
+        limits:
+          pids: -1
+    volumes:
+      - './:/app'
+    working_dir: /app
+    tty: true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - mongo
+      - redis
+    environment:
+      PHP_IDE_CONFIG: "serverName=lokilizer.local"
+    networks:
+      - lokilizer-network
+
+networks:
+  lokilizer-network:
+    name: lokilizer-network
+    driver: bridge

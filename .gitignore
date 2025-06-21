@@ -1,0 +1,12 @@
+/vendor/
+.idea/
+.vagrant/
+.env
+.phpunit.result.cache
+sh.exe.stackdump
+docker-compose.override.yml
+*.db
+*.db-journal
+*.csv
+ignore.txt
+dataset.json

@@ -1,0 +1,3 @@
+* * * * * /usr/local/bin/php /app/console.php handle:queue
+* * * * * /usr/local/bin/php /app/console.php handle:queue llm
+*/15 * * * * /usr/bin/timeout 300s /usr/local/bin/php /app/console.php

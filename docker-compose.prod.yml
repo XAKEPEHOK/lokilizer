@@ -1,0 +1,121 @@
+services:
+
+  mongo:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: mongo
+      args:
+        LOKILIZER_DOCKER_UID: ${LOKILIZER_DOCKER_UID}
+        LOKILIZER_DOCKER_GID: ${LOKILIZER_DOCKER_GID}
+    restart: unless-stopped
+    volumes:
+      - "./volumes/mongo/configdb:/data/configdb"
+      - "./volumes/mongo/data:/data/db"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${LOKILIZER_MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${LOKILIZER_MONGO_PASSWORD}
+    networks:
+      - lokilizer-network
+
+  redis:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: redis
+      args:
+        LOKILIZER_DOCKER_UID: ${LOKILIZER_DOCKER_UID}
+        LOKILIZER_DOCKER_GID: ${LOKILIZER_DOCKER_GID}
+    restart: unless-stopped
+    volumes:
+      - "./volumes/redis:/data"
+    networks:
+      - lokilizer-network
+
+  lokilizer-nginx:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: nginx
+      args:
+        LOKILIZER_DOCKER_UID: ${LOKILIZER_DOCKER_UID}
+        LOKILIZER_DOCKER_GID: ${LOKILIZER_DOCKER_GID}
+    volumes:
+      - './docker/nginx/prod/templates:/etc/nginx/templates'
+      - './docker/nginx/prod/conf.d/server_names_hash_bucket_size.conf:/etc/nginx/conf.d/server_names_hash_bucket_size.conf'
+      - './docker/nginx/prod/conf.d/server_tokens.conf:/etc/nginx/conf.d/server_tokens.conf'
+      - './:/app'
+    restart: unless-stopped
+    depends_on:
+      - php-fpm
+    environment:
+      - 'NGINX_HOST="${PROJECT_DOMAIN}"'
+    ports:
+      - "127.0.0.1:8081:80"
+    networks:
+      - lokilizer-network
+
+  php-fpm:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: php_fpm_prod
+      args:
+        LOKILIZER_DOCKER_UID: ${LOKILIZER_DOCKER_UID}
+        LOKILIZER_DOCKER_GID: ${LOKILIZER_DOCKER_GID}
+    volumes:
+      - ./:/app
+    restart: unless-stopped
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - lokilizer-network
+
+  php-cli:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: php_cli_prod
+      args:
+        LOKILIZER_DOCKER_UID: ${LOKILIZER_DOCKER_UID}
+        LOKILIZER_DOCKER_GID: ${LOKILIZER_DOCKER_GID}
+    volumes:
+      - ./:/app
+    working_dir: /app
+    tty: true
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - lokilizer-network
+
+  php-cron:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: php_cli_cron
+      args:
+        LOKILIZER_DOCKER_UID: ${LOKILIZER_DOCKER_UID}
+        LOKILIZER_DOCKER_GID: ${LOKILIZER_DOCKER_GID}
+        CRONTAB_FILENAME: app/config/crontab
+    deploy:
+      resources:
+        limits:
+          pids: -1
+    volumes:
+      - ./:/app
+      - ./app/config/crontab:/lokilizer_crontab
+    working_dir: /app
+    tty: true
+    restart: unless-stopped
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - lokilizer-network
+
+networks:
+  lokilizer-network:
+    name: lokilizer-network
+    driver: bridge
