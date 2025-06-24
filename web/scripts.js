@@ -103,6 +103,12 @@ $(document).ready(function () {
                     processedTimeago.add(el);
                 }
             });
+
+            // Обработка элементов timeago
+            $('textarea.textarea-autosize').each(function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            })
         };
     })();
 
@@ -148,10 +154,6 @@ $(document).ready(function () {
 
     $(document).on('click', '.llm-handle', function(e) {
         e.preventDefault();
-        if (!confirm('Are you sure you want to handle this record with LLM?')) {
-            return;
-        }
-
         const $a = $(this);
         const $group = $a.closest(".record-input-group");
         const $form = $a.closest(".record-input-form");

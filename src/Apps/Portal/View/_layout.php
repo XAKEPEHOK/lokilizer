@@ -32,7 +32,7 @@ $theme = Current::hasUser() ? Current::getUser()->getTheme() : Theme::Dark;
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/timeago@1.6.7/jquery.timeago.min.js"></script>
 
-    <script src="/scripts.js?8"></script>
+    <script src="/scripts.js?9"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
