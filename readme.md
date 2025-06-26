@@ -14,6 +14,15 @@ All you need is to provide your API tokens (e.g., for ChatGPT 4.1 or DeepSeek �
 > **Disclaimer**: The shoemaker’s children go barefoot 🙈  
 > The translation app itself is only in English! Maybe someday I’ll rewrite it in React with a beautiful frontend and more transparent technologies, but for now, it is what it is. But — it works!
 
+### Translate
+![Translate](web/gifs/translate.webp)
+
+### Validation
+![Validation](web/gifs/validation.webp)
+
+### Searching & Filtering
+![Filtering](web/gifs/filtering.webp)
+
 ---
 
 ## 🎯 Key Features

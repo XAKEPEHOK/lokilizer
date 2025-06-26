@@ -54,3 +54,24 @@ $this->layout('project_layout', ['request' => $request, 'title' => 'Getting star
         <a href="<?=$route('batch/translate')?>">AI translate</a> in <code>🏭 Batch -> 🔤 AI Translate</code>
     </li>
 </ol>
+
+<div class="row">
+    <div class="col-lg-8 offset-lg-2 col-sm-12 offset-sm-0">
+        <h2 class="my-4">Translate</h2>
+        <img class="rounded-5 w-100" src="/gifs/translate.webp" alt="Translate">
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 offset-lg-2 col-sm-12 offset-sm-0">
+        <h2 class="my-4">Validation</h2>
+        <img class="rounded-5 w-100" src="/gifs/validation.webp" alt="Validation">
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 offset-lg-2 col-sm-12 offset-sm-0">
+        <h2 class="my-4">Searching & Filtering</h2>
+        <img class="rounded-5 w-100" src="/gifs/filtering.webp" alt="Searching & Filtering">
+    </div>
+</div>
