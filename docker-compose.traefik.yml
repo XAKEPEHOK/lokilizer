@@ -32,6 +32,31 @@ services:
     networks:
       - lokilizer-network
 
+
+  lokilizer-traefik:
+    image: traefik:v3.0
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+#      - "--log.level=DEBUG"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "./volumes/traefik/letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    depends_on:
+      - lokilizer-nginx
+    networks:
+      - lokilizer-network
+
   lokilizer-nginx:
     build:
       context: .
@@ -50,8 +75,16 @@ services:
       - php-fpm
     environment:
       - 'NGINX_HOST="${PROJECT_DOMAIN}"'
-    ports:
-      - "127.0.0.1:8081:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lokilizer-nginx.rule=Host(`${PROJECT_DOMAIN}`)"
+      - "traefik.http.routers.lokilizer-nginx.entrypoints=websecure"
+      - "traefik.http.routers.lokilizer-nginx.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lokilizer-nginx.loadbalancer.server.port=80"
+      - "traefik.http.routers.lokilizer-nginx-http.rule=Host(`${PROJECT_DOMAIN}`)"
+      - "traefik.http.routers.lokilizer-nginx-http.entrypoints=web"
+      - "traefik.http.routers.lokilizer-nginx-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
     networks:
       - lokilizer-network
 

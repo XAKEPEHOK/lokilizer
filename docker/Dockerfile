@@ -94,6 +94,8 @@ COPY --link docker/php/dev/conf.d/xdebug.ini /usr/local/etc/php/conf.d/docker-ph
 FROM php_prod AS php_fpm_prod
 
 COPY --link docker/php/php-fpm.ini $PHP_INI_DIR/conf.d/
+COPY docker/php/php-fpm-entrypoint.sh /usr/local/bin/php-fpm-entrypoint.sh
+RUN chmod +x /usr/local/bin/php-fpm-entrypoint.sh
 USER $LOKILIZER_USER_NAME
 
 FROM php_dev AS php_fpm_dev

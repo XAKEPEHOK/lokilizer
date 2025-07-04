@@ -6,6 +6,9 @@
 
 # Lokilizer – Open Source Tool for App Localization and Translation
 
+## 🏗️ Installation
+See [installation.md](installation.md)
+
 ## 🚀 Project Overview
 
 This tool helps you localize and translate applications into multiple languages using any LLM model compatible with the OpenAI API (`chat/completions`).  

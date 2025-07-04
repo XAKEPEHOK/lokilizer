@@ -12,7 +12,7 @@ use XAKEPEHOK\Lokilizer\Apps\Portal\Components\RouteUri;
     <h4>
         A Bit of Promotion
     </h4>
-    <p>Other project from lokilizer's author:</p>
+    <p>Other project from Lokilizer's author:</p>
     <ul class="text-secondary">
         <li>
             <a href="https://salesrender.com">SalesRender</a> - CRM for online sales. Best for online stores, call centers, and CPA networks.
