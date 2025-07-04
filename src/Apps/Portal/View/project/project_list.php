@@ -35,5 +35,8 @@ $this->layout('account_layout', ['request' => $request, 'title' => 'Projects']) 
                 ➕ Create project
             </a>
         </div>
+        <div class="mt-4">
+            <?= $this->insert('_donations') ?>
+        </div>
     </div>
 </div>

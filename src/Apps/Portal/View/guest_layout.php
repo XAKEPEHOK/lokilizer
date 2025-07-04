@@ -16,6 +16,9 @@ $this->layout('_layout', ['request' => $request, 'title' => $title]);
                 <img class="w-50" src="/logo.png" alt="<?=$this->e($_ENV['PROJECT_NAME'])?>">
             </a>
             <?= $this->section('content') ?>
+            <br>
+            <br>
+            <?= $this->insert('_adv') ?>
         </div>
     </div>
 </div>

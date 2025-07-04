@@ -154,3 +154,10 @@ I believe the future belongs to free open-source solutions. I think it’s great
 The author reserves the right to monetize the app via embedded ads and donation links.
 
 For special commercial licensing, contact the author.
+
+## 📢 A Bit of Promotion for My Own Projects :)
+
+- [SalesRender](https://salesrender.com) – CRM for online sales. Best for online stores, call centers, and CPA networks.
+  Expert support at every stage of implementation.
+- [Ploito](https://ploito.com) - a virtual office for remote work. An application for organizing remote work with video
+  walkie-talkie, telepresence effect, burnout prevention and employees health tracker.
