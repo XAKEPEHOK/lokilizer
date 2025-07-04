@@ -123,7 +123,24 @@ Regardless of validation, a user can manually mark a string as verified, which a
   - **Developer** — everything except user and LLM management
   - **Translator** — can work only with assigned languages, edit the glossary, and set `📢 Alert message`
   - **Guest** — view only
-  - 
+
+## 💸 All Work Deserves Payment
+
+I believe the future belongs to free open-source solutions. I think it’s great when you can take something useful and important and use it for free without any restrictions. And I think it’s awesome that you can choose to pay for it later if you liked the product and have such an opportunity. I will be grateful if you decide to support me as well.
+
+- BTC: `bc1qsfn29g67raemehfsu4yhwl6h3tnmkw50n87xxa`
+- ETH: `0x10455b5aB8203e01d384682CF3c8E0ff44ffC105`
+- LTC: `ltc1qskxa50u4gsn390aj0wu9auu43ggu5m76yp6dc5`
+- TON: `UQC29X5L6AR-oWd7OToEMdtSw8-wK78Fv2eqZua8hr64GUse`
+- SOL: `74tHqBQWrCXMpYaoycmLumZGzL4H854SsFJEkdUnYg2R`
+- XRP: `rUh5YPiab7DN24A4mJMMYYBouNzGBmMXPU`
+- BNB: `0x10455b5aB8203e01d384682CF3c8E0ff44ffC105`
+- TRX: `TPU3GWSpdpeDTtRbATodGmyoNgUiBzWEvW`
+- DOGE: `D6jhNjNaV3ZYAJLrpA7ii6H3TnZEfghiRs`
+- ADA: `addr1q8gxxfzqx2t3xms2dxms9lghpytq2lvgam2cr0vl2v0y4dvw7ey94uac45jfzzvsgs90545g8m93lrjkl6c3pw49hnsqqkhyfj`
+- USDT (Tron, TRC-20): `TPU3GWSpdpeDTtRbATodGmyoNgUiBzWEvW`
+- USDT (Ethereum, ERC-20): `0x10455b5aB8203e01d384682CF3c8E0ff44ffC105`
+- USDT (Ton): `UQC29X5L6AR-oWd7OToEMdtSw8-wK78Fv2eqZua8hr64GUse`
 
 ## 🛡️ License and Usage
 
