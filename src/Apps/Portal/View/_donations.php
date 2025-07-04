@@ -30,5 +30,5 @@ use XAKEPEHOK\Lokilizer\Apps\Portal\Components\RouteUri;
         <li>USDT (Tron, TRC-20): <code>TPU3GWSpdpeDTtRbATodGmyoNgUiBzWEvW</code></li>
         <li>USDT (Ethereum, ERC-20): <code>0x10455b5aB8203e01d384682CF3c8E0ff44ffC105</code></li>
         <li>USDT (Ton): <code>UQC29X5L6AR-oWd7OToEMdtSw8-wK78Fv2eqZua8hr64GUse</code></li>
-    </ul>
+        <li>Or at least (it's better than nothing!), give us a star on <a target="_blank" href="https://github.com/XAKEPEHOK/lokilizer">GitHub</a></li>    </ul>
 </div>

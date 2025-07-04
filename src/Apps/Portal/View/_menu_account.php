@@ -30,6 +30,10 @@ use XAKEPEHOK\Lokilizer\Components\Current;
             <li>
                 <a target="_blank" class="dropdown-item" href="<?=$route('logout', false)?>">Logout</a>
             </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a target="_blank" class="dropdown-item" href="https://github.com/XAKEPEHOK/lokilizer">GitHub</a>
+            </li>
 
             <?php if ($_ENV['APP_ENV'] === 'dev'): ?>
                 <li><hr class="dropdown-divider"></li>

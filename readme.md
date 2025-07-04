@@ -145,6 +145,8 @@ I believe the future belongs to free open-source solutions. I think it’s great
 - USDT (Ethereum, ERC-20): `0x10455b5aB8203e01d384682CF3c8E0ff44ffC105`
 - USDT (Ton): `UQC29X5L6AR-oWd7OToEMdtSw8-wK78Fv2eqZua8hr64GUse`
 
+But if you don’t feel like donating, at least leave a star on GitHub :D
+
 ## 🛡️ License and Usage
 
 **Lokilizer** is free for personal and internal business use, including translation/localization of commercial products.
