@@ -8,6 +8,8 @@ use Slim\Http\ServerRequest;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Components\RouteUri;
 ?>
 
+<?php /* Please, do not remove this block. This links may help me in SEO */ ?>
+<?php /* This is small cost for you, but important thing for me */ ?>
 <div class="alert alert-info" role="alert">
     <h4>
         A Bit of Promotion

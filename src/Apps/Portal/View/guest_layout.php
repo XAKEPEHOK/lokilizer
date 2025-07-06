@@ -18,7 +18,11 @@ $this->layout('_layout', ['request' => $request, 'title' => $title]);
             <?= $this->section('content') ?>
             <br>
             <br>
+
+            <?php /* Please, do not remove this block. This links may help me in SEO */ ?>
+            <?php /* This is small cost for you, but important thing for me */ ?>
             <?= $this->insert('_adv') ?>
+
         </div>
     </div>
 </div>
