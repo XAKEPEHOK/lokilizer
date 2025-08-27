@@ -12,6 +12,7 @@ use DiBify\DiBify\Model\ModelInterface;
 use DiBify\DiBify\Pool\FloatPool;
 use JsonSerializable;
 use PrinsFrank\Standards\Language\LanguageAlpha2;
+use XAKEPEHOK\Lokilizer\Components\Current;
 
 abstract class Glossary implements ModelInterface, JsonSerializable
 {
@@ -83,6 +84,13 @@ abstract class Glossary implements ModelInterface, JsonSerializable
         foreach ($this->items as $item) {
             $languages = array_merge($languages, $item->getLanguages());
         }
+
+        $languages[] = Current::getProject()->getPrimaryLanguage();
+
+        if (Current::getProject()->getSecondaryLanguage()) {
+            $languages[] = Current::getProject()->getSecondaryLanguage();
+        }
+
         return array_unique($languages, SORT_REGULAR);
     }
 

@@ -123,7 +123,7 @@ class GlossaryUpdateAction extends RenderAction
                     }
                     $items[] = new GlossaryItem(
                         new GlossaryPhrase($primary, $primaryRows[$i]),
-                        $request->getParsedBodyParam('description')[$i],
+                        $request->getParsedBodyParam('description')[$i] ?? '',
                         ...$translations,
                     );
                 }
