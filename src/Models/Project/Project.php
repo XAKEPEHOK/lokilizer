@@ -142,6 +142,18 @@ class Project implements ModelInterface, ModelBeforeCommitEventInterface
         $this->secondaryLanguage = $secondary;
     }
 
+    /**
+     * @return LanguageAlpha2[]
+     */
+    public function getLanguages(): array
+    {
+        $languages = [$this->primaryLanguage];
+        if ($this->secondaryLanguage) {
+            $languages[] = $this->secondaryLanguage;
+        }
+        return $languages;
+    }
+
     public function getPlaceholdersFormat(): PlaceholderFormat
     {
         return $this->placeholders;

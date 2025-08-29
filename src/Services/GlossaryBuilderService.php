@@ -14,14 +14,10 @@ use PrinsFrank\Standards\Language\LanguageAlpha2;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Components\ApiRuntimeException;
 use XAKEPEHOK\Lokilizer\Components\Current;
 use XAKEPEHOK\Lokilizer\Models\Glossary\Db\Storage\GlossaryRepo;
-use XAKEPEHOK\Lokilizer\Models\Glossary\Glossary;
-use XAKEPEHOK\Lokilizer\Models\Glossary\GlossaryItem;
-use XAKEPEHOK\Lokilizer\Models\Glossary\GlossaryPhrase;
 use XAKEPEHOK\Lokilizer\Models\Glossary\SpecialGlossary;
 use XAKEPEHOK\Lokilizer\Models\LLM\LLMEndpoint;
 use XAKEPEHOK\Lokilizer\Models\Localization\Db\RecordRepo;
 use XAKEPEHOK\Lokilizer\Services\LLM\LLMService;
-use Yiisoft\Arrays\ArrayHelper;
 
 class GlossaryBuilderService
 {
@@ -218,140 +214,6 @@ class GlossaryBuilderService
 //            );
 //        }
 //        $glossary->setItems(...$items);
-        $glossary->LLMCost()->add($response->calcPrice());
-
-        $this->modelManager->commit(new Transaction([$glossary]));
-        return $glossary;
-    }
-
-    public function translate(LLMEndpoint $llmModel, Glossary $glossary, LanguageAlpha2 ...$languages): Glossary
-    {
-        $primaryGlossary = $this->glossaryRepo->findPrimary();
-
-        /** @var string[] $languages */
-        $languages = array_map(
-            fn(LanguageAlpha2 $lang) => $lang->value,
-            empty($languages) ? $primaryGlossary->getLanguages() : array_unique($languages, SORT_REGULAR)
-        );
-
-        $prompt = [
-            "You are working with a glossary used for translating an application into other languages. Your task is to ",
-            "analyze each application term and its description, and if it is not translated, translate it into",
-            implode(', ', array_map(
-                fn(string $lang) => LanguageAlpha2::from($lang)->name,
-                $languages
-            ))
-        ];
-
-        if ($primaryGlossary->getSummary()) {
-            $prompt = array_merge($prompt, [
-                "\n",
-                "\n",
-                'Additional context regarding the application (just for your understanding):',
-                "\n",
-                "<AdditionalContext>",
-                "\n",
-                $primaryGlossary->getSummary(),
-                "\n",
-                "</AdditionalContext>",
-            ]);
-        }
-
-        $prompt = array_merge($prompt, [
-            "\n",
-            "Response should be a JSON array, where every key a JSON object with structure like:",
-            "\n",
-            json_encode(array_combine(
-                $languages,
-                array_map(fn(string $lang) => "Terminology in " . LanguageAlpha2::from($lang)->name . ". Fill if empty", $languages),
-            )),
-        ]);
-
-        $text = [];
-        foreach ($glossary->getItems() as $index => $glossaryItem) {
-
-            $complete = 0;
-            foreach ($languages as $language) {
-                $phrase = $glossaryItem->getByLanguage(LanguageAlpha2::from($language))?->phrase ?? '';
-                $complete+= intval(!empty($phrase));
-            }
-
-            if ($complete === count($languages)) {
-                continue;
-            }
-
-            $text[$index][$glossaryItem->primary->language->value] = $glossaryItem->primary->phrase;
-            foreach ($glossaryItem->getLanguages() as $language) {
-                if ($language === $glossaryItem->primary->language) {
-                    continue;
-                }
-                $phrase = $glossaryItem->getByLanguage($language);
-                $text[$index][$language->value] = $phrase?->phrase ?? '';
-            }
-        }
-
-        $text = array_values($text);
-
-        if (empty($text)) {
-            return $glossary;
-        }
-
-        $response = $this->service->query(
-            prompt: implode(" ", $prompt),
-            text: json_encode($text, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            model: $llmModel,
-            format: [
-                'type' => 'json_schema',
-                'json_schema' => [
-                    'name' => 'glossaryPhrases',
-                    'strict' => true,
-                    'schema' => [
-                        'type' => 'array',
-                        'items' => [
-                            'type' => 'object',
-                            'properties' => array_combine(
-                                $languages,
-                                array_map(fn() => ['type' => 'string'], $languages),
-                            ),
-                            'required' => $languages,
-                            'additionalProperties' => false
-                        ]
-                    ],
-                ],
-            ],
-            failAttempts: 1
-        );
-
-        $data = $response->getAsJson();
-        $data = ArrayHelper::index($data, Current::getProject()->getPrimaryLanguage()->value);
-        $items = [];
-        foreach ($glossary->getItems() as $glossaryItem) {
-            $primaryPhrase = $glossaryItem->primary->phrase;
-            $translated = $data[$primaryPhrase] ?? null;
-            if (empty($translated)) {
-                $items[] = $glossaryItem;
-                continue;
-            }
-            unset($translated[$glossaryItem->primary->language->value]);
-
-            $phrases = [];
-            foreach ($languages as $language) {
-                $language = LanguageAlpha2::from($language);
-                if ($language === Current::getProject()->getPrimaryLanguage()) {
-                    continue;
-                }
-
-                $phrase = $glossaryItem->getByLanguage($language);
-                if (is_null($phrase) || mb_strlen($phrase->phrase) === 0) {
-                    $phrase = new GlossaryPhrase($language, $translated[$language->value]);
-                }
-                $phrases[] = $phrase;
-            }
-
-            $items[] = new GlossaryItem($glossaryItem->primary, $glossaryItem->description, ...$phrases);
-        }
-
-        $glossary->setItems(...$items);
         $glossary->LLMCost()->add($response->calcPrice());
 
         $this->modelManager->commit(new Transaction([$glossary]));

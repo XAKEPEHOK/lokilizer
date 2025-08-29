@@ -9,12 +9,14 @@ namespace XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary;
 
 use DiBify\DiBify\Manager\ModelManager;
 use DiBify\DiBify\Manager\Transaction;
+use DiBify\DiBify\Model\Reference;
 use League\Plates\Engine;
 use MongoDB\Driver\Exception\BulkWriteException;
 use PrinsFrank\Standards\Language\LanguageAlpha2;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
+use XAKEPEHOK\Lokilizer\Apps\Console\Handle\Tasks\GlossaryTranslateTaskCommand;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Components\ApiRuntimeException;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Components\RenderAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Components\RouteUri;
@@ -27,18 +29,17 @@ use XAKEPEHOK\Lokilizer\Models\Glossary\SpecialGlossary;
 use XAKEPEHOK\Lokilizer\Models\LLM\Db\LLMEndpointRepo;
 use XAKEPEHOK\Lokilizer\Models\Localization\Db\RecordRepo;
 use XAKEPEHOK\Lokilizer\Models\Project\Components\Role\Permission;
-use XAKEPEHOK\Lokilizer\Services\GlossaryBuilderService;
 
 class GlossaryUpdateAction extends RenderAction
 {
 
     public function __construct(
-        private GlossaryRepo           $glossaryRepo,
-        private RecordRepo             $recordRepo,
-        private ModelManager           $modelManager,
-        private GlossaryBuilderService $glossaryBuilderService,
-        private LLMEndpointRepo  $llmEndpointRepo,
-        Engine                         $renderer
+        private GlossaryRepo                 $glossaryRepo,
+        private RecordRepo                   $recordRepo,
+        private ModelManager                 $modelManager,
+        private LLMEndpointRepo              $llmEndpointRepo,
+        private GlossaryTranslateTaskCommand $glossaryTranslateTask,
+        Engine                               $renderer
     )
     {
         parent::__construct($renderer);
@@ -77,10 +78,14 @@ class GlossaryUpdateAction extends RenderAction
             if ($addLang) {
                 Current::guard(Permission::MANAGE_GLOSSARY);
                 $languages[] = $addLang;
-                $languages = array_unique($languages, SORT_REGULAR);
                 $llmModel = $this->llmEndpointRepo->findDefault();
-                $this->glossaryBuilderService->translate($llmModel, $glossary, ...$languages);
-                return $response->withRedirect((new RouteUri($request))("glossary/{$glossary->id()}"));
+                $uuid = $this->glossaryTranslateTask->publish([
+                    'llm' => Reference::to($llmModel),
+                    'glossary' => Reference::to($glossary),
+                    'languages' => [$addLang->value],
+                    'uri' => strval((new RouteUri($request))("glossary/{$glossary->id()}"))
+                ]);
+                return $response->withRedirect((new RouteUri($request))("progress/{$uuid}"));
             }
         }
 
@@ -89,8 +94,14 @@ class GlossaryUpdateAction extends RenderAction
                 $request->getQueryParam('translate'),
                 new ApiRuntimeException('Invalid LLM model')
             );
-            $this->glossaryBuilderService->translate($llmModel, $glossary);
-            return $response->withRedirect((new RouteUri($request))("glossary/{$glossary->id()}"));
+
+            $uuid = $this->glossaryTranslateTask->publish([
+                'llm' => Reference::to($llmModel),
+                'glossary' => Reference::to($glossary),
+                'uri' => strval((new RouteUri($request))("glossary/{$glossary->id()}"))
+            ]);
+
+            return $response->withRedirect((new RouteUri($request))("progress/{$uuid}"));
         }
 
         $error = '';

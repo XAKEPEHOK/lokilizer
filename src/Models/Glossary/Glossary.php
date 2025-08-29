@@ -80,15 +80,9 @@ abstract class Glossary implements ModelInterface, JsonSerializable
 
     public function getLanguages(): array
     {
-        $languages = [];
+        $languages = Current::getProject()->getLanguages();
         foreach ($this->items as $item) {
             $languages = array_merge($languages, $item->getLanguages());
-        }
-
-        $languages[] = Current::getProject()->getPrimaryLanguage();
-
-        if (Current::getProject()->getSecondaryLanguage()) {
-            $languages[] = Current::getProject()->getSecondaryLanguage();
         }
 
         return array_unique($languages, SORT_REGULAR);

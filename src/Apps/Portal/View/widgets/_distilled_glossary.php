@@ -51,7 +51,7 @@ use XAKEPEHOK\Lokilizer\Services\GlossaryService;
     <?php foreach ($glossaries as $glossary): ?>
         <?php foreach ($glossary->getItems() as $item): ?>
             <div class="tab-pane fade mt-2" id="glossary-items-<?= md5("{$item}{$prefix}") ?>" role="tabpanel">
-                <?php foreach ($item->translations as $translation): ?>
+                <?php foreach ($item->getTranslations() as $translation): ?>
                     <span class="badge text-bg-secondary"
                           title="<?= $this->e(str_replace('_', ' ', $translation->language->name)) ?>">
                                     <span class="badge text-bg-primary">

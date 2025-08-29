@@ -21,7 +21,7 @@ class GlossaryItem implements Stringable, JsonSerializable
     public readonly string $description;
 
     /** @var GlossaryPhrase[] */
-    public readonly array $translations;
+    protected array $translations;
 
     public function __construct(
         GlossaryPhrase $primary,
@@ -38,6 +38,20 @@ class GlossaryItem implements Stringable, JsonSerializable
             ),
             fn (GlossaryPhrase $phrase) => $phrase->language->value
         ));
+    }
+
+    public function getTranslations(): array
+    {
+        return $this->translations;
+    }
+
+    public function addTranslation(GlossaryPhrase $phrase): void
+    {
+        if (empty($phrase->phrase)) {
+            return;
+        }
+
+        $this->translations[$phrase->language->value] = $phrase;
     }
 
     public function isComplete(?LanguageAlpha2 $language = null): bool
