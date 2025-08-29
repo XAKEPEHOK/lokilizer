@@ -15,13 +15,14 @@ use XAKEPEHOK\Lokilizer\Models\Glossary\GlossaryItem;
 
 <tr>
     <?php foreach ($languages as $language): ?>
+        <?php $value = $item?->getByLanguage($language) ?? ''; ?>
         <td class="pt-3">
             <input
-                class="form-control form-control-sm"
+                class="form-control form-control-sm <?=(strlen($value) === 0 && $item) ? 'is-invalid' : ''?>"
                 type="text"
                 name="<?=$language->value?>[]"
                 placeholder="Text in <?=$this->e(str_replace('_', ' ', $language->name))?>"
-                value="<?=$item?->getByLanguage($language) ?? ''?>"
+                value="<?=$value?>"
             >
         </td>
     <?php endforeach; ?>
