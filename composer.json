@@ -41,7 +41,7 @@
         "symfony/yaml": "^7.0",
         "symfony/filesystem": "^7.2",
         "league/plates": "^3.5",
-        "openai-php/client": "^0.10.2",
+        "openai-php/client": "^0.17.1",
         "league/uri": "^7.0",
         "nyholm/psr7": "^1.8",
         "xakepehok/path": "^0.2.6",
