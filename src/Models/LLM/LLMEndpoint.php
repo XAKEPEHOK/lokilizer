@@ -130,7 +130,7 @@ class LLMEndpoint implements ModelInterface
         $responseFormat = [];
         $response = $this->getClient()->chat()->create([
             'model' => $this->model,
-            'temperature' => 0.2,
+//            'temperature' => 0.2,
             'messages' => [
                 ['role' => 'system', 'content' => $prompt],
                 ['role' => 'user', 'content' => $text],
