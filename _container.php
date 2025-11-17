@@ -6,22 +6,31 @@
  */
 
 require __DIR__.'/vendor/autoload.php';
+
 use DI\ContainerBuilder;
 use DiBify\DiBify\Manager\ModelManager;
 use Dotenv\Dotenv;
 use Dotenv\Repository\Adapter\EnvConstAdapter;
 use Dotenv\Repository\RepositoryBuilder;
 
+// Настройка и загрузка .env
 $repository = RepositoryBuilder::createWithNoAdapters()
     ->addAdapter(EnvConstAdapter::class)
     ->immutable()
     ->make();
 
 $env = Dotenv::create($repository, __DIR__);
-$env->load();
+$env->load(); // Загружает переменные из .env в $_ENV и $_SERVER
 
-$_ENV['PROJECT_NAME'] = 'Lokilizer';
-$_ENV['PROJECT_HOME'] = 'https://lokilizer.com';
+// Инициализация массива $config, если он не определён где-то ещё
+// Это важно, если $config используется в addDefinitions
+if (!isset($config)) {
+    $config = [];
+}
+
+// Загружаем переменные из .env, с возможностью переопределения
+$config['PROJECT_NAME'] = $_ENV['PROJECT_NAME'] ?? 'Lokilizer'; // 'Lokilizer' - значение по умолчанию
+$config['PROJECT_HOME'] = $_ENV['PROJECT_HOME'] ?? 'https://lokilizer.com'; // 'https://lokilizer.com' - значение по умолчанию
 
 $isSentry = isset($_ENV['SENTRY']) && !empty($_ENV['SENTRY']);
 if ($isSentry) {
@@ -79,6 +88,7 @@ if (file_exists(__DIR__ . '/app/config/dependencies.local.php')) {
     $config = array_merge($config, require __DIR__ . '/app/config/dependencies.local.php');
 }
 
+// Передаём определения в контейнер
 $builder = new ContainerBuilder();
 $builder->addDefinitions($config);
 
