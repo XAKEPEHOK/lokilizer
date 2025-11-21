@@ -40,6 +40,8 @@ class Project implements ModelInterface, ModelBeforeCommitEventInterface
 
     protected FloatPool $balance;
 
+    protected bool $symbolValidationEnabled = true; // по умолчанию включено
+
     public function __construct(string $name, User $owner)
     {
         $this->id = new Id();
@@ -203,6 +205,16 @@ class Project implements ModelInterface, ModelBeforeCommitEventInterface
         if ($this->getPrimaryLanguage() === $this->getSecondaryLanguage()) {
             $this->secondaryLanguage = null;
         }
+    }
+
+    public function getSymbolValidationEnabled(): bool
+    {
+        return $this->symbolValidationEnabled ?? true; // на всякий случай, если null
+    }
+
+    public function setSymbolValidationEnabled(bool $enabled): void
+    {
+        $this->symbolValidationEnabled = $enabled;
     }
 
     public static function getModelAlias(): string
