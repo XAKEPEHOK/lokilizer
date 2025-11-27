@@ -23,7 +23,7 @@ $this->layout('project_layout', ['request' => $request, 'title' => 'Getting star
     </li>
     <li>
         <span class="badge text-bg-warning">Required</span>
-        <a href="<?=$route('glossary/common')?>">Create common glossary</a> in <code>📜 Glossary -> 📗 Common</code>.
+        <a href="<?=$route('glossary/primary')?>">Create common glossary</a> in <code>📜 Glossary -> 📗 Common</code>.
         Describe your application summary and add app-specific terminology. You can fill glossary in your primary language
         only (or with secondary) and save it. After that, you can click on <code>Add language button</code> for automatic
         translation to selected language
@@ -50,7 +50,7 @@ $this->layout('project_layout', ['request' => $request, 'title' => 'Getting star
     <li>
         <span class="badge text-bg-info">Add new language</span>
         <a href="<?=$route('upload')?>">Upload</a> translation in new language or add new language in
-        <a href="<?=$route('glossary/common')?>">glossary</a>. After that, you can run
+        <a href="<?=$route('glossary/primary')?>">glossary</a>. After that, you can run
         <a href="<?=$route('batch/translate')?>">AI translate</a> in <code>🏭 Batch -> 🔤 AI Translate</code>
     </li>
 </ol>
