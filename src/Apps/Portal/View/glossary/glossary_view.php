@@ -35,7 +35,7 @@ $this->layout('project_layout', ['request' => $request, 'title' => $title, 'subt
     <?php endif; ?>
 
     <?php if (!empty($glossary->getSummary())): ?>
-        <p class="text-secondary" style="white-space: pre-wrap;"><?= $this->e($glossary->getSummary()) ?></p>
+        <p style="white-space: pre-wrap;"><?= $this->e($glossary->getSummary()) ?></p>
     <?php endif; ?>
 
     <?php if (!empty($glossary->getItems())): ?>
@@ -65,7 +65,7 @@ $this->layout('project_layout', ['request' => $request, 'title' => $title, 'subt
                         </div>
                     <?php endforeach; ?>
                     <?php if (!empty($item->description)): ?>
-                        <div class="text-secondary small mt-1"><?= $this->e($item->description) ?></div>
+                        <div class="small mt-1"><?= $this->e($item->description) ?></div>
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
