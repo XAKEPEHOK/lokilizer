@@ -18,6 +18,7 @@ use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryBuildAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryListAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryUpdateAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryUsageAction;
+use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryViewAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\LLM\LLMListAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\LLM\LLMUpdateAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Profile\PasswordChangeAction;
@@ -100,6 +101,7 @@ $app->group('', function (RouteCollectorProxy $group) use ($container) {
             $group->post('/_build', GlossaryBuildAction::class);
             $group->get('/usage', GlossaryUsageAction::class);
             $group->map(['GET', 'POST'],'/list', GlossaryListAction::class);
+            $group->get('/view/{id}', GlossaryViewAction::class);
             $group->map(['GET', 'POST'],'[/{id}]', GlossaryUpdateAction::class);
         });
         $group->map(['GET', 'POST'], '/progress/{uuid}', ProgressAction::class);

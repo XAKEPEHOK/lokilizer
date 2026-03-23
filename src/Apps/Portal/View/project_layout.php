@@ -26,9 +26,9 @@ $project = $request->getAttribute('project');
 $menu = [
     '🔤 Translations' => '',
     '📜 Glossary' => [
-        '📗 Common' => new MenuItem('glossary/primary', Permission::MANAGE_GLOSSARY),
-        '📙 Special' => new MenuItem('glossary/list', Permission::MANAGE_GLOSSARY),
-        '📊 Usage' => new MenuItem('glossary/usage', Permission::MANAGE_GLOSSARY),
+        '📗 Common' => new MenuItem('glossary/primary'),
+        '📙 Special' => new MenuItem('glossary/list'),
+        '📊 Usage' => new MenuItem('glossary/usage'),
     ],
     '🏭 Batch' => [
         '📤 Upload translation' => new MenuItem('upload', Permission::FILE_UPLOADS),

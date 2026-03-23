@@ -64,6 +64,10 @@ class GlossaryUpdateAction extends RenderAction
             $languages = $primaryGlossary->getLanguages();
         }
 
+        if (!Current::can(Permission::MANAGE_LANGUAGES)) {
+            return $response->withRedirect((new RouteUri($request))("glossary/view/{$glossary->id()}"));
+        }
+
         $params = [
             'keyPrefix' => $request->getParsedBodyParam('keyPrefix', ($glossary instanceof SpecialGlossary ? $glossary->getKeyPrefix() : '')),
             'summary' => $request->getParsedBodyParam('summary', $glossary->getSummary() ?? ''),

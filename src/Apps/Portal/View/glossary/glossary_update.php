@@ -58,6 +58,7 @@ $this->layout('project_layout', ['request' => $request, 'title' => $title, 'subt
 <?php endif; ?>
 
 <div class="container">
+    <a href="<?= $route("glossary/view/{$glossary->id()}") ?>" class="btn btn-outline-secondary mb-4">View-mode</a>
     <form id="glossaryForm" method="post">
         <?php if ($glossary instanceof SpecialGlossary): ?>
             <div class="row mb-3">

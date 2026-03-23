@@ -40,6 +40,7 @@ use XAKEPEHOK\Lokilizer\Models\Project\Components\Role\Permission;
     <div class="card-footer text-body-secondary">
         <div class="row">
             <div class="col">
+                <a href="<?= $route("glossary/view/{$glossary->id()}") ?>" class="btn btn-outline-primary btn-sm">View</a>
                 <?php if (Current::can(Permission::MANAGE_GLOSSARY)): ?>
                     <a href="<?= $route("glossary/{$glossary->id()}") ?>" class="btn btn-primary btn-sm">Edit</a>
                     <form
