@@ -101,7 +101,7 @@ class Project implements ModelInterface, ModelBeforeCommitEventInterface
             fn(UserRole $role) => $role->user !== $userRole->user
         );
         $this->users[] = $userRole;
-        $this->users = array_unique($this->users);
+        $this->users = array_values(array_unique($this->users));
     }
 
     public function hasUser(User $user): bool
@@ -116,10 +116,10 @@ class Project implements ModelInterface, ModelBeforeCommitEventInterface
 
     public function removeUser(User $user): void
     {
-        $this->users = array_filter(
+        $this->users = array_values(array_filter(
             $this->users,
             fn(UserRole $userRole) => !$userRole->user->isFor($user)
-        );
+        ));
     }
 
     public function getPrimaryLanguage(): LanguageAlpha2
@@ -191,11 +191,6 @@ class Project implements ModelInterface, ModelBeforeCommitEventInterface
     public function setDefaultLLM(?LLMEndpoint $defaultLLM): void
     {
         $this->defaultLLM = is_null($defaultLLM) ? null : Reference::to($defaultLLM);
-    }
-
-    public function balance(): FloatPool
-    {
-        return $this->balance;
     }
 
     public function onBeforeCommit(): void
