@@ -61,6 +61,12 @@ class UploadAction extends RenderAction
                 }
 
                 $json = $file->getStream()->getContents();
+
+                // Удаляем UTF-8 BOM, если он присутствует
+                if (str_starts_with($json, "\xEF\xBB\xBF")) {
+                    $json = substr($json, 3);
+                }
+
                 try {
                     $data = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
                 } catch (JsonException) {
