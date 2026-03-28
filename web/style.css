@@ -2,3 +2,35 @@ textarea.textarea-autosize {
     overflow: hidden;
     resize: none;
 }
+
+/* Базовый стиль для всех полей перевода */
+textarea.record-textarea {
+    font-family: var(--bs-font-monospace);
+    font-size: 0.95em;
+    line-height: 1.4;
+    resize: vertical;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    padding: 0.375rem 0.75rem; /* как у .form-control */
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+}
+
+/* Многострочные поля: минимум 6 строк */
+textarea.record-textarea.multiline {
+    min-height: calc(1.4em * 6 + 1.2em); /* 6 строк + padding */
+    max-height: 300px;
+    white-space: pre-wrap;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Авто-высота: динамически подстраивается под содержимое */
+textarea.record-textarea.autosize {
+    height: auto;
+    overflow: hidden;
+    resize: none;
+    white-space: nowrap;
+    overflow-x: auto;
+    min-height: calc(1.4em + 1.2em); /* 1 строка */
+}

@@ -162,10 +162,21 @@ $identity = "{$record->id()}-{$value->getLanguage()->value}"
             >
         </label>
 
-        <?php if ($value->getWarnings() > 0): ?>
-            <?php $errors = "<div class='text-start pt-3'><ul class='ps-4'>" . implode('', array_map(fn(string $err) => "<li>{$this->e($err)}</li>", $value->validate($record))) . "</ul></div>"; ?>
+        <?php
+        $validationErrors = $value->validate($record);
+
+        // Отладка: вывести ключ фразы и ошибки в консоль браузера
+        //if (!empty($validationErrors)) {
+        //    $jsonErrors = json_encode($validationErrors);
+        //    $recordKey = $this->e($record->getKey()); // Экранируем для безопасности
+        //    echo "<script>console.log('Record key: \"{$recordKey}\", Validation errors:', $jsonErrors);</script>";
+        //}
+
+        // Используем тот же результат для отображения значка и подсказки
+        if (count($validationErrors) > 0): ?>
+            <?php $errors = "<div class='text-start pt-3'><ul class='ps-4'>" . implode('', array_map(fn(string $err) => "<li>{$this->e($err)}</li>", $validationErrors)) . "</ul></div>"; ?>
             <div class="input-group-text" data-bs-toggle="tooltip" data-bs-html="true"
-                 data-bs-title="<?= htmlspecialchars($errors) ?>">
+                data-bs-title="<?= htmlspecialchars($errors) ?>">
                 <div style="<?= $value->verified ? 'filter: grayscale(1); opacity: 0.5;' : '' ?>">
                     ⚠️
                 </div>
