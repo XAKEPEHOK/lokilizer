@@ -26,6 +26,7 @@ use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Profile\ProfileChangeAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Backup\BackupMakeAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Project\ProjectCreateAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Project\ProjectInviteAction;
+
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\File\DownloadAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Record\GlossaryCheckAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Record\LLMAction;
@@ -75,6 +76,10 @@ $app->map(['GET', 'POST'], '/signup', SignupAction::class);
 $app->map(['GET', 'POST'], '/login', LoginAction::class);
 $app->map(['GET', 'POST'], '/logout', LogoutAction::class);
 
+// --- Маршрут для приглашения неавторизованных пользователей (до AuthMiddleware) ---
+$app->map(['GET', 'POST'], '/project/{projectId}/invite/{inviteId}', ProjectInviteAction::class);
+//$app->map(['GET', 'POST'], '/project/{projectId}/invite/{inviteId}', 'XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Project\ProjectInviteAction');
+
 $app->group('', function (RouteCollectorProxy $group) use ($container) {
     $group->get('/[project[/]]', ProjectListAction::class);
     $group->group('/profile', function (RouteCollectorProxy $group) use ($container) {
@@ -82,7 +87,7 @@ $app->group('', function (RouteCollectorProxy $group) use ($container) {
         $group->map(['GET', 'POST'], '/password', PasswordChangeAction::class);
     });
     $group->map(['GET', 'POST'], '/project/create', ProjectCreateAction::class);
-    $group->map(['GET', 'POST'], '/project/{projectId}/invite/{inviteId}', ProjectInviteAction::class);
+    //$group->map(['GET', 'POST'], '/project/{projectId}/invite/{inviteId}', ProjectInviteAction::class);
     $group->group('/project/{projectId}', function (RouteCollectorProxy $group) use ($container) {
 
         if ($_ENV['APP_ENV'] === 'dev') {
@@ -139,11 +144,10 @@ $app->group('', function (RouteCollectorProxy $group) use ($container) {
         $group->map(['GET', 'POST'], '/text-translate', TextTranslateAction::class);
         $group->get('/loosed-placeholders', LoosedPlaceholdersAction::class);
 
-
     })->add($container->get(ProjectMiddleware::class));
 })->add($container->get(AuthMiddleware::class));
 
-if ($_ENV['APP_ENV'] !== 'prod') {
+if ($_ENV['APP_ENV'] === 'dev') {
     $app->get('/phpinfo', function (Request $request, Response $response) {
         phpinfo();
         return $response;

@@ -12,6 +12,7 @@ use League\Plates\Engine;
 use OTPHP\TOTP;
 use PhpDto\EmailAddress\EmailAddress;
 use PhpDto\EmailAddress\Exception\InvalidEmailAddressException;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Http\Response;
 use Slim\Http\ServerRequest as Request;
@@ -20,30 +21,84 @@ use XAKEPEHOK\Lokilizer\Apps\Portal\Components\ApiRuntimeException;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Components\RenderAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Components\RouteUri;
 use XAKEPEHOK\Lokilizer\Components\PublicExceptionInterface;
+use XAKEPEHOK\Lokilizer\Models\Project\Components\UserRole;
+use XAKEPEHOK\Lokilizer\Models\Project\Db\ProjectRepo; // Добавляем
+use XAKEPEHOK\Lokilizer\Models\Project\Project; // Добавляем
 use XAKEPEHOK\Lokilizer\Models\User\Components\HumanName\HumanName;
 use XAKEPEHOK\Lokilizer\Models\User\Components\Password\Password;
 use XAKEPEHOK\Lokilizer\Models\User\Db\UserRepo;
 use XAKEPEHOK\Lokilizer\Models\User\User;
 use XAKEPEHOK\Lokilizer\Models\User\UserTOTP;
+use XAKEPEHOK\Lokilizer\Services\InviteService\InviteService; // Добавляем
 use XAKEPEHOK\Lokilizer\Services\TokenService;
 use function Sentry\captureException;
 
 class SignupAction extends RenderAction
 {
+    private ContainerInterface $container;
 
     public function __construct(
         Engine                        $engine,
         private readonly UserRepo     $userRepo,
         private readonly ModelManager $modelManager,
         private readonly TokenService $service,
+        private readonly ProjectRepo $projectRepo, // Подключаем ProjectRepo
+        private readonly InviteService $inviteService, // Подключаем InviteService
+        ContainerInterface            $container,
     )
     {
         parent::__construct($engine);
+        $this->container = $container;
     }
 
     public function __invoke(Request $request, Response $response): Response|ResponseInterface
     {
         $error = '';
+
+        // --- Проверка GET-параметров для inviteFlag ---
+        $inviteProjectId = $request->getQueryParam('invite_project_id'); // Получаем projectId из GET
+        $inviteId = $request->getQueryParam('invite_id'); // Получаем inviteId из GET
+
+        $inviteFlag = false;
+        $pendingInvite = null; // Объект приглашения
+        $pendingProject = null; // Объект проекта
+
+        if ($inviteProjectId && $inviteId) {
+            $pendingProject = $this->projectRepo->findById($inviteProjectId);
+            $pendingInvite = $this->inviteService->getInviteByIdForProject($inviteId, $inviteProjectId); // Используем новый метод
+
+            if ($pendingProject && $pendingInvite && $pendingInvite->isValid()) {
+                $inviteFlag = true;
+            }
+            // Если приглашение недействительно, $inviteFlag останется false, и проверки $allowSignup/$allowedEmails сработают как обычно.
+        }
+        // --- /Проверка GET-параметров ---
+        // ... (остальной код проверок, например, $allowSignup и $allowedEmails)
+        $allowSignup = $this->container->get('ALLOW_SIGNUP');
+        $allowedEmails = $this->container->get('SIGNUP_ALLOWED_EMAILS');
+
+        if (!$inviteFlag && $allowSignup !== true) {
+            $error = 'Registration is currently disabled.';
+        } else if (!$inviteFlag && !empty($allowedEmails)) {
+            $submittedEmail = $request->getParsedBodyParam('email', '');
+            if (!empty($submittedEmail)) {
+                $isAllowed = false;
+                foreach ($allowedEmails as $pattern) {
+                    $pattern = trim($pattern);
+                    if ($this->emailMatchesPattern($submittedEmail, $pattern)) {
+                        $isAllowed = true;
+                        break;
+                    }
+                }
+                if (!$isAllowed) {
+                    $error = 'Registration is not allowed for this email address.';
+                }
+            }
+        }
+
+        if ($request->isPost() && !empty($error) && !$inviteFlag) {
+             // ... (отрисовка формы с ошибкой, если проверки не прошли и это не по приглашению)
+        }
 
         $provisioningUri = $request->getParsedBodyParam(
             'provisioningUri',
@@ -57,8 +112,9 @@ class SignupAction extends RenderAction
         $secondFA = $request->getParsedBodyParam('secondFA', '');
 
         $user = null;
-        if ($request->isPost()) {
+        if ($request->isPost() && empty($error)) {
             try {
+                // ... (создание пользователя, проверки паролей и т.д.)
                 $user = new User(
                     name: new HumanName(
                         $request->getParsedBodyParam('firstName', ''),
@@ -90,8 +146,39 @@ class SignupAction extends RenderAction
                 $user->setTOTP($userTotp);
                 $this->modelManager->commit(new Transaction([$user]));
 
+                // --- Логика для приглашения (если inviteFlag = true) ---
+                if ($inviteFlag && $pendingInvite && $pendingProject) {
+                    // Проверяем, что пользователь всё ещё не в проекте (на всякий случай)
+                    if (!$pendingProject->hasUser($user)) {
+                        // --- Установим Current::setProject перед работой с проектом и приглашением ---
+                        \XAKEPEHOK\Lokilizer\Components\Current::setProject($pendingProject);
+
+                        // Добавляем пользователя в проект по данным приглашения
+                        $pendingProject->setUser(new UserRole(
+                            $user,
+                            $pendingInvite->role,
+                            ...$pendingInvite->languages
+                        ));
+
+                        // Отзываем приглашение (теперь Current::getProject() инициализирован)
+                        $this->inviteService->revoke($pendingInvite);
+                        // Сохраняем изменения в проекте (теперь Current::getProject() инициализирован)
+                        $this->modelManager->commit(new Transaction([$pendingProject]));
+                    }
+                }
+
+                // --- ИЗМЕНЕНО: Перенаправление ---
+                // Если была информация о приглашении, перенаправляем на главную страницу проекта
+                // В противном случае, на главную страницу приложения
+                $redirectUri = (new RouteUri($request))(''); // <-- Это /project/{projectId}/ для проекта или / для главной
+                if ($inviteFlag && $pendingProject) {
+                     // Явно указываем путь к проекту
+                     $redirectUri = $request->getUri()->withPath("/project/{$pendingProject->id()->get()}/")->withQuery('');
+                }
+                // --- /ИЗМЕНЕНО ---
+
                 return FigResponseCookies::set(
-                    $response->withRedirect((new RouteUri($request))('')),
+                    $response->withRedirect($redirectUri),
                     $this->service->getCookieToken($user)
                 );
 
@@ -99,7 +186,8 @@ class SignupAction extends RenderAction
                 $error = $exception->getMessage();
             } catch (Throwable $throwable) {
                 if ($_ENV['APP_ENV'] === 'dev') {
-                    $error = 'Internal ServerError: ' . $throwable->getMessage();
+                    // Выводим полное сообщение об ошибке в dev-режиме
+                    $error = 'Internal ServerError: ' . $throwable->getMessage() . ' in ' . $throwable->getFile() . ' on line ' . $throwable->getLine();
                 } else {
                     $error = 'Internal Server Error';
                 }
@@ -107,9 +195,11 @@ class SignupAction extends RenderAction
             }
         }
 
+        // --- ИЗМЕНЕНО: Передача inviteFlag в шаблон ---
+        // При GET-запросе (показ формы) или при POST с ошибками
         return $this->render($response, 'auth/signup_index', [
             'request' => $request,
-            'email' => $user?->getEmail() ?? '',
+            'email' => $user?->getEmail() ?? $request->getParsedBodyParam('email', ''),
             'firstName' => $request->getParsedBodyParam('firstName', ''),
             'lastName' => $request->getParsedBodyParam('lastName', ''),
             'password' => $request->getParsedBodyParam('password', ''),
@@ -118,6 +208,17 @@ class SignupAction extends RenderAction
             'secondFA' => $secondFA,
             'provisioningUri' => $provisioningUri,
             'error' => $error,
+            'allowSignup' => $allowSignup,
+            'inviteFlag' => $inviteFlag, // <-- Передаём флаг в шаблон
         ]);
+        // --- /ИЗМЕНЕНО ---
+    }
+
+    private function emailMatchesPattern($email, $pattern): bool
+    {
+        $pattern = preg_quote($pattern, '#');
+        $pattern = str_replace('\*', '.*', $pattern);
+        $pattern = '#^' . $pattern . '$#i';
+        return (bool) preg_match($pattern, $email);
     }
 }

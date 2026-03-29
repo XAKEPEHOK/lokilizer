@@ -4,6 +4,10 @@
  * Datetime: 14.06.2017 14:18
  */
 
+use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Auth\LoginAction;
+use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Auth\SignupAction;
+// use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Project\ProjectInviteAction; // <-- ВАЖНО: ЭТОТ use НЕ ДОЛЖЕН БЫТЬ ЗДЕСЬ И НЕ ДОЛЖЕН БЫТЬ В web/index.php
+use XAKEPEHOK\Lokilizer\Apps\Portal\Middleware\AuthMiddleware;
 use XAKEPEHOK\Lokilizer\Models\Glossary\Db\Storage\GlossaryRepo;
 use XAKEPEHOK\Lokilizer\Models\Glossary\PrimaryGlossary;
 use XAKEPEHOK\Lokilizer\Models\Glossary\SpecialGlossary;
@@ -28,6 +32,39 @@ use Symfony\Contracts\Cache\CacheInterface;
 use XAKEPEHOK\Path\Path;
 
 return [
+
+    // --- Вкл/выкл регистрацию новых пользователей ---
+    'ALLOW_SIGNUP' => filter_var($_ENV['ALLOW_SIGNUP'] ?? true, FILTER_VALIDATE_BOOLEAN),
+    'SIGNUP_ALLOWED_EMAILS' => $_ENV['SIGNUP_ALLOWED_EMAILS'] ? explode(',', $_ENV['SIGNUP_ALLOWED_EMAILS']) : [],
+    // --- /Вкл/выкл регистрацию новых пользователей ---
+
+    // --- Добавляем определение для AuthMiddleware ---
+    AuthMiddleware::class => function (ContainerInterface $container) {
+        return new AuthMiddleware(
+            tokenService: $container->get(\XAKEPEHOK\Lokilizer\Services\TokenService::class),
+            modelManager: $container->get(ModelManager::class),
+            projectRepo: $container->get(ProjectRepo::class),
+            inviteService: $container->get(\XAKEPEHOK\Lokilizer\Services\InviteService\InviteService::class),
+            engine: $container->get(Engine::class),
+            container: $container
+        );
+    },
+    // --- /Добавляем определение для AuthMiddleware ---
+
+    // --- Добавляем определение для ProjectInviteAction ---
+    // Используем ::class для правильного ключа
+    \XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Project\ProjectInviteAction::class => function (ContainerInterface $container) {
+        return new \XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Project\ProjectInviteAction(
+            renderer: $container->get(Engine::class),
+            projectRepo: $container->get(ProjectRepo::class),
+            inviteService: $container->get(\XAKEPEHOK\Lokilizer\Services\InviteService\InviteService::class),
+            modelManager: $container->get(ModelManager::class),
+            tokenService: $container->get(\XAKEPEHOK\Lokilizer\Services\TokenService::class),
+            modelManagerService: $container->get(ModelManager::class),
+            container: $container // <-- Передаём сам контейнер
+        );
+    },
+    // --- /Добавляем определение для ProjectInviteAction ---
 
     ConfigManager::class => function (ContainerInterface $container) {
         $idGenerator = new SortableUniqueIdGenerator();

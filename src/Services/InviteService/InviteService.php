@@ -32,12 +32,20 @@ class InviteService
         return $invite;
     }
 
-    public function revoke(Invite|string $inviteOrId): void
+    // --- Принимает projectId напрямую (нужен для ProjectInviteAction) ---
+    public function getInviteByIdForProject(string $inviteId, string $projectId): ?Invite
     {
-        $inviteId = is_string($inviteOrId) ? $inviteOrId : $inviteOrId->id;
-        $projectId = Current::getProject()->id()->get();
         $key = "project:{$projectId}:invite:{$inviteId}";
-        $this->redis->del($key);
+        $data = $this->redis->get($key);
+        if (empty($data)) {
+            return null;
+        }
+
+        try {
+            return Invite::fromJson($data);
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     public function getInviteById(string $inviteId): ?Invite
@@ -54,6 +62,14 @@ class InviteService
         } catch (Throwable) {
             return null;
         }
+    }
+
+    public function revoke(Invite|string $inviteOrId): void
+    {
+        $inviteId = is_string($inviteOrId) ? $inviteOrId : $inviteOrId->id;
+        $projectId = Current::getProject()->id()->get();
+        $key = "project:{$projectId}:invite:{$inviteId}";
+        $this->redis->del($key);
     }
 
     /**
