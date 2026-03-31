@@ -74,9 +74,14 @@ $this->layout('project_layout', ['request' => $request, 'title' => $title ?? 'Ta
 
         <?php if ($max > 0): ?>
             <?php $percent = $current / ($max / 100); ?>
-            <div class="progress" role="progressbar">
-                <div class="progress-bar" style="width: <?= $percent ?>%">
-                    <?= $this->e($current) ?>/<?= $this->e($max) ?>
+            <div class="position-relative" style="height: 20px;">
+                <div class="progress" role="progressbar" style="height: 100%;">
+                    <div class="progress-bar" style="width: <?= $percent ?>%"></div>
+                </div>
+                <!-- Текст прогресса по центру над полосой -->
+                <div class="position-absolute top-50 start-50 translate-middle text-white fw-bold"
+                    style="font-size: 0.9rem; pointer-events: none;">
+                    <?= $this->e($current) ?>/<?= $this->e($max) ?> (<?= number_format($percent, 1) ?>%)
                 </div>
             </div>
         <?php endif; ?>
