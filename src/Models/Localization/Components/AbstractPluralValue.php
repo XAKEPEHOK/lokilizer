@@ -14,6 +14,7 @@ use XAKEPEHOK\Lokilizer\Components\Current;
 use XAKEPEHOK\Lokilizer\Models\Localization\PluralRecord;
 use XAKEPEHOK\Lokilizer\Models\Localization\Record;
 use XAKEPEHOK\Lokilizer\Models\Project\Components\EOLFormat;
+use XAKEPEHOK\Lokilizer\Models\Localization\Components\ValueSymbolValidator;
 
 abstract class AbstractPluralValue extends AbstractValue
 {
@@ -133,20 +134,12 @@ abstract class AbstractPluralValue extends AbstractValue
         $primaryHasEOL = false;
         $currentHasEOL = false;
 
-        $categoryColon = [];
-        $primaryHasColon = false;
-        $currentHasColon = false;
-
         foreach ($shouldBeFilled as $category) {
             $primaryEOL = EOLFormat::count($primary->$category);
             $currentEOL = EOLFormat::count($this->$category);
             $categoryEOL[$category] = $currentEOL;
             $primaryHasEOL = $primaryHasEOL || $primaryEOL > 0;
             $currentHasEOL = $currentHasEOL || $currentEOL > 0;
-
-            $categoryColon[$category] = substr_count($this->$category, ':');
-            $primaryHasColon = $primaryHasColon || substr_count($primary->$category, ':') > 0;
-            $currentHasColon = $currentHasColon || substr_count($this->$category, ':') > 0;
         }
 
         if ($primaryHasEOL !== $currentHasEOL) {
@@ -157,24 +150,45 @@ abstract class AbstractPluralValue extends AbstractValue
             }
         }
 
-        if ($primaryHasColon !== $currentHasColon) {
-            if ($primaryHasColon) {
-                $errors[] = "Colon exists in primary language value, but not exists in current value";
-            } else {
-                $errors[] = "Colon does not exists in primary language value, but exists in current value";
-            }
-        }
-
         $minEol = min($categoryEOL);
         $maxEol = max($categoryEOL);
         if ($minEol !== $maxEol) {
             $errors[] = "Different categories contain different count of EOL";
         }
 
-        $minColon = min($categoryColon);
-        $maxColon = max($categoryColon);
-        if ($minColon !== $maxColon) {
-            $errors[] = "Different categories contain different count of colons";
+        // ✅ Новые проверки через валидатор
+        foreach ($shouldBeFilled as $category) {
+            $primaryValue = $primary->$category;
+            $currentValue = $this->$category;
+
+            // Проверка на количество символов
+            $errors = array_merge($errors, ValueSymbolValidator::validate($currentValue, $primaryValue, $category));
+
+            // Проверка на наличие/отсутствие символов (если нужно — можно добавить отдельно)
+            // Пример: ValueSymbolValidator::validateExistence($currentValue, $primaryValue, '?', $category);
+        }
+
+        // Проверка на разное количество символов в разных категориях
+        foreach (array_keys(ValueSymbolValidator::SYMBOLS) as $symbol) {
+            $counts = [];
+            $hasSymbolPrimary = false;
+            $hasSymbolCurrent = false;
+
+            foreach ($shouldBeFilled as $category) {
+                $primaryCount = substr_count($primary->$category, $symbol);
+                $currentCount = substr_count($this->$category, $symbol);
+                $counts[$category] = $currentCount;
+                $hasSymbolPrimary = $hasSymbolPrimary || $primaryCount > 0;
+                $hasSymbolCurrent = $hasSymbolCurrent || $currentCount > 0;
+            }
+
+            $minCount = min($counts);
+            $maxCount = max($counts);
+            if ($minCount !== $maxCount) {
+                $name = ValueSymbolValidator::SYMBOLS[$symbol];
+                $symbolQuoted = "'{$symbol}'";
+                $errors[] = "Different categories contain different count of {$name} {$symbolQuoted}";
+            }
         }
 
         return array_values($errors);

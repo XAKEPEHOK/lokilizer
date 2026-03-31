@@ -45,6 +45,9 @@ class ProjectCreateAction extends RenderAction
             'placeholders' => $request->getParsedBodyParam('placeholders', PlaceholderFormat::JS->value),
             'eol' => $request->getParsedBodyParam('eol', base64_encode(EOLFormat::N->value)),
             'fileFormatter' => $request->getParsedBodyParam('fileFormatter', FileFormatter::I18NEXT->value),
+            'symbolValidationEnabled' => $request->isPost()
+                ? (bool) $request->getParsedBodyParam('symbolValidationEnabled', false)
+                : true,
         ];
 
         $error = '';
@@ -83,6 +86,9 @@ class ProjectCreateAction extends RenderAction
                 $project->setEOLFormat($eol);
                 $project->setFileFormatter($fileFormat);
 
+                // ✅ Устанавливаем значение символьной проверки из формы
+                $project->setSymbolValidationEnabled($params['symbolValidationEnabled']);
+
                 Current::setProject($project);
 
                 $gpt4_1 = new LLMEndpoint(
@@ -95,14 +101,6 @@ class ProjectCreateAction extends RenderAction
 
                 $deepseek = new LLMEndpoint(
                     'Deepseek v3',
-                    'https://api.deepseek.com/v1',
-                    '',
-                    'deepseek-chat',
-                    new LLMPricing(0.27, 1.1),
-                );
-
-                $deepseek = new LLMEndpoint(
-                    'Deepseek',
                     'https://api.deepseek.com/v1',
                     '',
                     'deepseek-chat',
@@ -128,6 +126,7 @@ class ProjectCreateAction extends RenderAction
             }
         }
 
+        // ✅ Передаём $params в шаблон, чтобы форма знала начальное состояние параметров
         return $this->render($response, 'project/project_create', [
             'request' => $request,
             'form' => $params,

@@ -47,6 +47,11 @@ class ProjectSettingsAction extends RenderAction
             'placeholders' => $request->getParsedBodyParam('placeholders', $project->getPlaceholdersFormat()->value),
             'eol' => $request->getParsedBodyParam('eol', base64_encode($project->getEOLFormat()->value)),
             'fileFormatter' => $request->getParsedBodyParam('fileFormatter', FileFormatter::I18NEXT->value),
+            // ✅ Добавляем новое поле в $params
+            // Если это POST-запрос, читаем из тела, иначе — из текущего состояния проекта
+            'symbolValidationEnabled' => $request->isPost()
+                ? (bool) $request->getParsedBodyParam('symbolValidationEnabled', false)
+                : $project->getSymbolValidationEnabled(),
         ];
 
         $error = '';
@@ -88,8 +93,11 @@ class ProjectSettingsAction extends RenderAction
                 $project->setEOLFormat($eol);
                 $project->setFileFormatter($fileFormat);
                 $project->setDefaultLLM(Current::getLLMEndpoints()[$params['llm']]);
+                
+                // ✅ Устанавливаем новую настройку
+                $project->setSymbolValidationEnabled($params['symbolValidationEnabled']);
 
-                $this->modelManager->commit(new Transaction([$project]));
+                $this->modelManager->commit(new Transaction([$project])); // ✅ Сохранение
 
                 return $response->withRedirect((new RouteUri($request))(""));
 
@@ -98,6 +106,7 @@ class ProjectSettingsAction extends RenderAction
             }
         }
 
+        // ✅ Передаём $params в шаблон
         return $this->render($response, 'project/project_settings', [
             'request' => $request,
             'project' => $project,

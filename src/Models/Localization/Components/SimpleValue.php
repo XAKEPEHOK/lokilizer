@@ -14,6 +14,7 @@ use XAKEPEHOK\Lokilizer\Components\Current;
 use XAKEPEHOK\Lokilizer\Models\Localization\Record;
 use XAKEPEHOK\Lokilizer\Models\Localization\SimpleRecord;
 use XAKEPEHOK\Lokilizer\Models\Project\Components\EOLFormat;
+use XAKEPEHOK\Lokilizer\Models\Localization\Components\ValueSymbolValidator;
 
 class SimpleValue extends AbstractValue implements Stringable
 {
@@ -54,23 +55,23 @@ class SimpleValue extends AbstractValue implements Stringable
         }
 
         if (mb_strlen($this->value) !== mb_strlen(trim($this->value))) {
-            $errors[] = "Whitespaces are not trimmed";
+            $errors[] = "Whitespaces ' ' are not trimmed";
         }
 
         if (str_contains($this->value, '  ')) {
-            $errors[] = "String contains double whitespaces";
+            $errors[] = "String contains double whitespaces '  '";
         }
 
         $exclude = ['email', 'api', 'ip', 'url', 'uri', 'id'];
-        if ($this !== $primary && trim($this->value) === trim($primary->value) && !in_array(mb_strtolower(trim($primary)), $exclude)) {
+        if ($this !== $primary && trim($this->value) === trim($primary->value) && !in_array(mb_strtolower(trim($primary->value)), $exclude)) {
             $errors[] = "String potentially may not translated from primary language";
         }
 
-        if ($secondary && $this !== $primary && $this !== $secondary && trim($this->value) === trim($secondary->value) && !in_array(mb_strtolower(trim($secondary)), $exclude)) {
+        if ($secondary && $this !== $primary && $this !== $secondary && trim($this->value) === trim($secondary->value) && !in_array(mb_strtolower(trim($secondary->value)), $exclude)) {
             $errors[] = "String potentially may not translated from secondary language";
         }
 
-        if ($this !== $primary && trim($this->value) !== trim($primary->value) && mb_strtolower(trim($this->value)) === mb_strtolower(trim($primary))) {
+        if ($this !== $primary && trim($this->value) !== trim($primary->value) && mb_strtolower(trim($this->value)) === mb_strtolower(trim($primary->value))) {
             $errors[] = "String has different chars in lower/upper cases";
         }
 
@@ -91,14 +92,11 @@ class SimpleValue extends AbstractValue implements Stringable
         $primaryEOL = EOLFormat::count($primary->value);
         $currentEOL = EOLFormat::count($this->value);
         if ($primaryEOL !== $currentEOL) {
-            $errors[] = "EOL count mismatch. Primary: {$primaryEOL}; Current: {$currentEOL}";
+            $errors[] = "Mismatch in the number of EOL. Primary: {$primaryEOL}; Current: {$currentEOL}";
         }
 
-        $primaryColons = substr_count($primary->value, ":");
-        $currentColons = substr_count($this->value, ":");
-        if ($primaryColons !== $currentColons) {
-            $errors[] = "Colons count mismatch. Primary: {$primaryColons}; Current: {$currentColons}";
-        }
+        // ✅ Заменяем все проверки на символы на вызов валидатора
+        $errors = array_merge($errors, ValueSymbolValidator::validate($this->value, $primary->value));
 
         return $errors;
     }
@@ -144,7 +142,7 @@ class SimpleValue extends AbstractValue implements Stringable
         return Current::getProject()->getEOLFormat()->convert($this->value);
     }
 
-    public static function getEmpty(LanguageAlpha2 $language): static
+    static public function getEmpty(LanguageAlpha2 $language): static
     {
         return new static($language, '');
     }

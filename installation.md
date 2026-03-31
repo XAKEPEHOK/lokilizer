@@ -11,6 +11,18 @@ cp .env.traefik .env
 # - LETSENCRYPT_EMAIL=you-real-email@not-example.com 
 # - SIGN_SECRET=any_secret_for_encryption_your_backup
 nano .env
+
+# Create required directories and set correct ownership (use your current UID/GID, usually 1000:1000)
+mkdir -p vendor volumes/mongo/data volumes/mongo/configdb volumes/redis runtime
+sudo chown -R 1000:1000 vendor volumes runtime
+
+# Create the migration state file if it doesn't exist
+if [ ! -f migrations/_applied.json ]; then
+    touch migrations/_applied.json
+    chmod 666 migrations/_applied.json
+    echo '[]' > migrations/_applied.json
+fi
+
 docker compose up -d
 ```
 
@@ -24,6 +36,18 @@ cp .env.prod .env
 # - PROJECT_DOMAIN=you-domain.com
 # - SIGN_SECRET=any_secret_for_encryption_your_backup
 nano .env
+
+# Create required directories and set correct ownership (use your current UID/GID, usually 1000:1000)
+mkdir -p vendor volumes/mongo/data volumes/mongo/configdb volumes/redis runtime
+sudo chown -R 1000:1000 vendor volumes runtime
+
+# Create the migration state file if it doesn't exist
+if [ ! -f migrations/_applied.json ]; then
+    touch migrations/_applied.json
+    chmod 666 migrations/_applied.json
+    echo '[]' > migrations/_applied.json
+fi
+
 docker compose up -d
 ```
 

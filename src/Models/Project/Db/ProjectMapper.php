@@ -2,6 +2,7 @@
 
 namespace XAKEPEHOK\Lokilizer\Models\Project\Db;
 
+use DiBify\DiBify\Mappers\BoolMapper;
 use DiBify\DiBify\Mappers\EnumMapper;
 use DiBify\DiBify\Mappers\IntMapper;
 use DiBify\DiBify\Mappers\NullOrMapper;
@@ -38,6 +39,7 @@ class ProjectMapper extends ModelMapper
             'placeholders' => new EnumMapper(PlaceholderFormat::class, StringMapper::getInstance()),
             'eol' => new EnumMapper(EOLFormat::class, StringMapper::getInstance()),
             'fileFormatter' => new EnumMapper(FileFormatter::class, StringMapper::getInstance()),
+            'symbolValidationEnabled' => new NullOrMapper(BoolMapper::getInstance()),
         ]);
     }
 
