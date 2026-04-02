@@ -68,5 +68,58 @@ $theme = Current::hasUser() ? Current::getUser()->getTheme() : Theme::Dark;
     </div>
 <?php endif; ?>
 <?= $this->section('content') ?>
+
+<!-- Добавляем скрипт для обработки logout -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Находим ссылку "Logout" по id
+        const logoutLink = document.getElementById('logout-link');
+
+        // Проверяем, существует ли элемент (например, пользователь не вошёл)
+        if (logoutLink) {
+            // Добавляем обработчик события 'click'
+            logoutLink.addEventListener('click', function(event) {
+                // 1. Отменяем стандартное поведение (переход по ссылке)
+                event.preventDefault();
+
+                // 2. Получаем URL из атрибута href
+                const logoutUrl = logoutLink.getAttribute('href');
+
+                // 3. Выполняем fetch-запрос к URL logout
+                fetch(logoutUrl, {
+                        method: 'GET', // или 'POST', смотрим ваш маршрут в index.php. Там map GET/POST на /logout
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'same-origin' // Важно для передачи cookie
+                    })
+                    .then(response => {
+                        // Проверяем, успешен ли ответ
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        // Парсим JSON-ответ
+                        return response.json();
+                    })
+                    .then(data => {
+                        // 4. Проверяем, есть ли URL для перенаправления в ответе
+                        if (data.redirect) {
+                            // 5. Выполняем перенаправление в ТЕКУЩЕЙ (той же) вкладке
+                            window.location.href = data.redirect;
+                        } else {
+                            // Если URL не пришёл, можно перенаправить на главную или показать ошибку
+                            window.location.href = '/'; // или другой URL по умолчанию
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при выходе:', error);
+                        // В случае ошибки тоже можно перенаправить или показать сообщение
+                        window.location.href = '/'; // или другой URL по умолчанию
+                    });
+            });
+        }
+    });
+</script>
+
 </body>
 </html>
