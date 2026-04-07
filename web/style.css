@@ -2,3 +2,13 @@ textarea.textarea-autosize {
     overflow: hidden;
     resize: none;
 }
+
+/* Выпадающий список выбора языка поиска (страница загрузки файлов) */
+#language-dropdown mark {
+    background-color: #4a5568; /* темно-серый фон — под тёмную тему */
+    color: #fbbf24;            /* янтарный/золотистый текст — хорошо читается */
+    padding: 0 3px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
