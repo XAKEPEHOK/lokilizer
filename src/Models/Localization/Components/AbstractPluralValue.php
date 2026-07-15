@@ -77,7 +77,7 @@ abstract class AbstractPluralValue extends AbstractValue
         }
 
         $errors = [];
-        $shouldBeFilled = self::getCategoriesForLanguage($this->getLanguage());
+        $shouldBeFilled = self::getCategoriesForLanguage($this->getLanguage(), static::getType());
         $shouldBeEmpty = array_diff(self::getCategories(), $shouldBeFilled);
 
         foreach ($shouldBeFilled as $category) {
@@ -232,7 +232,7 @@ abstract class AbstractPluralValue extends AbstractValue
             'other' => $this->other,
         ];
 
-        $categories = self::getCategoriesForLanguage($this->language);
+        $categories = self::getCategoriesForLanguage($this->language, static::getType());
         return array_filter(
             $array,
             fn (string $value, string $key) => in_array($key, $categories, true),

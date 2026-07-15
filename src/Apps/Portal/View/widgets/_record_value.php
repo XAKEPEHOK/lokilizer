@@ -71,7 +71,7 @@ $identity = "{$record->id()}-{$value->getLanguage()->value}"
             </div>
             <?php endif; ?>
             <?php if ($record instanceof PluralRecord): ?>
-                <?php foreach (AbstractPluralValue::getCategoriesForLanguage($value->getLanguage()) as $category): ?>
+                <?php foreach (AbstractPluralValue::getCategoriesForLanguage($value->getLanguage(), $record->getType()) as $category): ?>
                     <div class="input-group input-group-sm">
                             <span
                                     data-bs-toggle="tooltip"
