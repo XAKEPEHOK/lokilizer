@@ -15,6 +15,7 @@ use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Batch\BatchModifyAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Batch\BatchAITranslateAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Dev\DevAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryBuildAction;
+use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryJsonAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryListAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryUpdateAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryUsageAction;
@@ -74,6 +75,8 @@ $app->add($container->get(RoutingMiddleware::class));
 $app->map(['GET', 'POST'], '/signup', SignupAction::class);
 $app->map(['GET', 'POST'], '/login', LoginAction::class);
 $app->map(['GET', 'POST'], '/logout', LogoutAction::class);
+
+$app->get('/project/{projectId}/glossary.json', GlossaryJsonAction::class);
 
 $app->group('', function (RouteCollectorProxy $group) use ($container) {
     $group->get('/[project[/]]', ProjectListAction::class);
