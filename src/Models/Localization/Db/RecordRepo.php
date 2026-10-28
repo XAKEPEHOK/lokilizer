@@ -64,6 +64,84 @@ class RecordRepo extends Repository implements ApiSearchInterface
     }
 
     /**
+     * @param string $query
+     * @param LanguageAlpha2|null $language
+     * @return Record[]
+     * @throws DuplicateModelException
+     * @throws SerializerException
+     * @throws UnassignedIdException
+     */
+    public function findSimilar(string $query, ?LanguageAlpha2 $language = null): array
+    {
+        $query = $this->normalize($query);
+        if ($query === '') {
+            return [];
+        }
+
+        /** @var RecordMongoStorage $storage */
+        $storage = $this->getReplicator()->getPrimary();
+        $values = $storage->fetchAllValues();
+        $substringMatches = [];
+
+        foreach ($values as $recordId => $translations) {
+            if ($language !== null) {
+                $translations = isset($translations[$language->value])
+                    ? [$translations[$language->value]]
+                    : [];
+            }
+
+            foreach ($translations as $text) {
+                if (mb_strpos($this->normalize($text), $query, 0, 'UTF-8') !== false) {
+                    $substringMatches[$recordId] = true;
+                    break;
+                }
+            }
+        }
+
+        $queryNgrams = $this->trigrams($query);
+        $scores = [];
+
+        foreach ($values as $recordId => $translations) {
+            if (isset($substringMatches[$recordId])) {
+                continue;
+            }
+
+            if ($language !== null) {
+                $translations = isset($translations[$language->value])
+                    ? [$translations[$language->value]]
+                    : [];
+            }
+
+            foreach ($translations as $text) {
+                $score = $this->trigramSimilarity($queryNgrams, $text);
+                if ($score > 0) {
+                    $scores[$recordId] = $score;
+                }
+            }
+        }
+
+        arsort($scores, SORT_NUMERIC);
+        $ids = array_slice([
+            ...array_keys($substringMatches),
+            ...array_keys($scores),
+        ], 0, 50);
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $models = $this->findByIds($ids);
+        $result = [];
+        foreach ($ids as $id) {
+            if (isset($models[$id])) {
+                $result[$id] = $models[$id];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * @param LanguageAlpha2 $to
      * @param SimpleValue ...$values
      * @return SimpleRecord|null
@@ -243,6 +321,43 @@ class RecordRepo extends Repository implements ApiSearchInterface
         }
 
         return $languages;
+    }
+
+    private function trigramSimilarity(array $queryNgrams, string $text): float
+    {
+        $candidateNgrams = $this->trigrams($text);
+        if ($candidateNgrams === []) {
+            return 0.0;
+        }
+
+        $intersection = count(array_intersect($queryNgrams, $candidateNgrams));
+        return 2 * $intersection / (count($queryNgrams) + count($candidateNgrams));
+    }
+
+    private function normalize(string $text): string
+    {
+        return mb_strtolower((string) preg_replace('/\s+/u', ' ', trim($text)), 'UTF-8');
+    }
+
+    private function trigrams(string $text): array
+    {
+        $text = $this->normalize($text);
+        $length = mb_strlen($text, 'UTF-8');
+
+        if ($length === 0) {
+            return [];
+        }
+
+        if ($length < 3) {
+            return [$text];
+        }
+
+        $ngrams = [];
+        for ($i = 0; $i <= $length - 3; $i++) {
+            $ngrams[] = mb_substr($text, $i, 3, 'UTF-8');
+        }
+
+        return array_values(array_unique($ngrams));
     }
 
     public function commit(Transaction $transaction): void

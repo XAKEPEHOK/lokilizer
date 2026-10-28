@@ -5,8 +5,6 @@ namespace XAKEPEHOK\Lokilizer\Apps\Mcp;
 use DiBify\DiBify\Exceptions\DuplicateModelException;
 use DiBify\DiBify\Exceptions\SerializerException;
 use DiBify\DiBify\Exceptions\UnassignedIdException;
-use DiBify\DiBify\Repository\Components\Pagination;
-use DiBify\DiBify\Repository\Components\Sorting;
 use InvalidArgumentException;
 use PrinsFrank\Standards\Language\LanguageAlpha2;
 use XAKEPEHOK\Lokilizer\Components\Current;
@@ -83,28 +81,22 @@ class LocalizationTools
     }
 
     /**
-     * Find current localization records by value with pagination.
+     * Find up to 50 current localization records: substring matches first, then trigram matches by similarity.
      * Each result includes its key, primary-language comment, and selected language values.
      *
-     * @param string $query Case-insensitive substring to find in UI values
+     * @param string $query Case-insensitive substring or fuzzy query to find in UI values
      * @param string|null $searchLanguage ISO 639-1 language to search; omit to search values in all languages
      * @param string|null $resultLanguage ISO 639-1 additional language to include in results
-     * @param int $page Page number, starting at 1; each page contains up to 50 records
      */
     public function searchRecords(
         string $query,
         ?string $searchLanguage = null,
         ?string $resultLanguage = null,
-        int $page = 1,
     ): array
     {
         $query = trim($query);
         if ($query === '') {
             throw new InvalidArgumentException('Query cannot be empty');
-        }
-
-        if ($page < 1) {
-            throw new InvalidArgumentException('Page must be greater than or equal to 1');
         }
 
         $searchLanguage = $searchLanguage === null
@@ -114,45 +106,21 @@ class LocalizationTools
             ? null
             : $this->parseLanguage($resultLanguage);
 
-        $filters = [
-            'value' => $query,
-            'outdated' => false,
-        ];
-
-        if ($searchLanguage !== null) {
-            $filters['language'] = $searchLanguage->value;
-        }
-
-        $perPage = 50;
-        $total = $this->recordRepo->countByAPI($filters);
-        $records = $this->recordRepo->searchByAPI(
-            $filters,
-            new Pagination($page, $perPage),
-            new Sorting('position', Sorting::SORT_ASC)
-        );
-
+        $records = $this->recordRepo->findSimilar($query, $searchLanguage);
         $languages = $this->withProjectLanguages(array_filter([
             $searchLanguage,
             $resultLanguage,
         ]));
 
-        return [
-            'items' => array_map(
-                fn($record) => [
-                    'key' => $record->getKey(),
-                    'type' => $record instanceof PluralRecord ? $record->getType() : 'simple',
-                    'comment' => $record->getComment(),
-                    'values' => $this->recordValues($record, $languages),
-                ],
-                $records
-            ),
-            'pagination' => [
-                'page' => $page,
-                'perPage' => $perPage,
-                'total' => $total,
-                'totalPages' => (int) ceil($total / $perPage),
+        return array_values(array_map(
+            fn($record) => [
+                'key' => $record->getKey(),
+                'type' => $record instanceof PluralRecord ? $record->getType() : 'simple',
+                'comment' => $record->getComment(),
+                'values' => $this->recordValues($record, $languages),
             ],
-        ];
+            $records
+        ));
     }
 
     private function glossaryTranslations(GlossaryItem $item, array $languages): array

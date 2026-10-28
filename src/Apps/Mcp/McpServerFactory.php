@@ -65,7 +65,7 @@ class McpServerFactory
             ->addTool(
                 [$this->tools, 'searchRecords'],
                 'search_ui_strings',
-                description: 'Search current UI strings by a case-insensitive substring in their values. Omit searchLanguage to search all languages. Returns one page of up to 50 records with pagination metadata; each record includes its key, primary-language comment, and values for primary, optional secondary, searchLanguage and resultLanguage when provided. Results are not relevance-scored; refine the query or use pagination to inspect additional matches.'
+                description: 'Search current UI strings by a case-insensitive substring. Returns up to 50 unique records: whole-query substring matches come first, followed by trigram fuzzy matches sorted by similarity to tolerate typos and omitted words. Omit searchLanguage to search all languages. Each record includes its key, primary-language comment, and values for primary, optional secondary, searchLanguage and resultLanguage when provided.'
             )
             ->build();
     }

@@ -312,6 +312,45 @@ class RecordMongoStorage extends MongoStorage implements ApiSearchInterface
         return array_column($result, '_id');
     }
 
+    /**
+     * @return array<string, array<string, string>>
+     */
+    public function fetchAllValues(): array
+    {
+        $match = ['outdatedAt' => null];
+
+        $projection = [
+            'values.language' => 1,
+            'values.value' => 1,
+        ];
+        foreach (AbstractPluralValue::getCategories() as $category) {
+            $projection["values.{$category}"] = 1;
+        }
+
+        $documents = json_decode(json_encode($this->aggregate([
+            ['$match' => $match],
+            ['$project' => $projection],
+        ])->toArray()), true);
+
+        $result = [];
+        foreach ($documents as $document) {
+            $recordId = (string) $document['_id']['id'];
+            $result[$recordId] = [];
+
+            foreach ($document['values'] ?? [] as $value) {
+                $forms = array_intersect_key($value, array_flip(AbstractPluralValue::getCategories()));
+                $text = $value['value'] ?? implode(' ', array_filter(
+                    $forms,
+                    fn(string $form) => $form !== ''
+                ));
+
+                $result[$recordId][$value['language']] = $text;
+            }
+        }
+
+        return $result;
+    }
+
     public function findNearby(string $parentKey, int $fromPosition, int $toPosition): array
     {
         $filter = [

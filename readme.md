@@ -141,7 +141,7 @@ Available tools:
 
 - `get_languages` — lists ISO 639-1 language codes and identifies `primary` and optional `secondary`; agents should call it once per session.
 - `get_glossaries` — returns the application-wide primary glossary and contextual special glossaries. Special terminology applies only to the features or pages identified by `keyPrefix` and `summary`. Results include primary, optional secondary, and the working language requested via `language`.
-- `search_ui_strings` — finds current records by value across all languages or only in `searchLanguage`. Use it for terminology context and for instructions involving menu items or navigation paths. Results are paginated by 50 records via `page` and include the key, primary-language comment, primary and optional secondary values, plus `searchLanguage` and `resultLanguage` when provided. Results are not relevance-scored; agents should refine the query or use pagination to inspect additional matches.
+- `search_ui_strings` — finds up to 50 unique current records by value across all languages or only in `searchLanguage`. Whole-query substring matches come first, followed by trigram fuzzy matches sorted by similarity to tolerate typos and omitted words. Results include the key, primary-language comment, primary and optional secondary values, plus `searchLanguage` and `resultLanguage` when provided.
 
 ---
 
