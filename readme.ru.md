@@ -126,7 +126,7 @@ Lokilizer предоставляет read-only [Model Context Protocol](https://
 ```json
 {
   "mcpServers": {
-    "lokilizer": {
+    "ui-terminology": {
       "type": "http",
       "url": "https://<domain>/mcp/<projectId>",
       "headers": {

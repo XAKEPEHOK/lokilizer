@@ -126,7 +126,7 @@ Example client configuration:
 ```json
 {
   "mcpServers": {
-    "lokilizer": {
+    "ui-terminology": {
       "type": "http",
       "url": "https://<domain>/mcp/<projectId>",
       "headers": {
