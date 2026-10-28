@@ -2,7 +2,7 @@
 
 ### PHP ###
 ARG PHP_VERSION="8.2"
-ARG PHP_ALPINE_VERSION="3.17"
+ARG PHP_ALPINE_VERSION="3.24"
 
 FROM composer/composer:2-bin AS composer
 
@@ -71,7 +71,7 @@ RUN mv $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
 
 FROM php AS php_dev
 
-ARG XDEBUG_VERSION="3.2.0"
+ARG XDEBUG_VERSION="3.4.7"
 
 RUN set -eux; \
     mv $PHP_INI_DIR/php.ini-development $PHP_INI_DIR/php.ini \
