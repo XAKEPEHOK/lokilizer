@@ -68,6 +68,7 @@ class RecordRepo extends Repository implements ApiSearchInterface
      * @param LanguageAlpha2|null $language
      * @return Record[]
      * @throws DuplicateModelException
+     * @throws InvalidArgumentException
      * @throws SerializerException
      * @throws UnassignedIdException
      */
@@ -78,9 +79,27 @@ class RecordRepo extends Repository implements ApiSearchInterface
             return [];
         }
 
-        /** @var RecordMongoStorage $storage */
-        $storage = $this->getReplicator()->getPrimary();
-        $values = $storage->fetchAllValues();
+        $values = $this->cache->get(
+            "record-similar-" . Current::getProject()->id(),
+            function (ItemInterface $item): array {
+                $item->expiresAfter(60 * 60 * 24);
+
+                /** @var RecordMongoStorage $storage */
+                $storage = $this->getReplicator()->getPrimary();
+                $values = [];
+                foreach ($storage->fetchAllValues() as $recordId => $translations) {
+                    foreach ($translations as $language => $text) {
+                        $text = $this->normalize($text);
+                        $values[$recordId][$language] = [
+                            'value' => $text,
+                            'trigrams' => $this->trigrams($text),
+                        ];
+                    }
+                }
+
+                return $values;
+            }
+        );
         $substringMatches = [];
 
         foreach ($values as $recordId => $translations) {
@@ -90,8 +109,8 @@ class RecordRepo extends Repository implements ApiSearchInterface
                     : [];
             }
 
-            foreach ($translations as $text) {
-                if (mb_strpos($this->normalize($text), $query, 0, 'UTF-8') !== false) {
+            foreach ($translations as $translation) {
+                if (mb_strpos($translation['value'], $query, 0, 'UTF-8') !== false) {
                     $substringMatches[$recordId] = true;
                     break;
                 }
@@ -112,8 +131,8 @@ class RecordRepo extends Repository implements ApiSearchInterface
                     : [];
             }
 
-            foreach ($translations as $text) {
-                $score = $this->trigramSimilarity($queryNgrams, $text);
+            foreach ($translations as $translation) {
+                $score = $this->trigramSimilarity($queryNgrams, $translation['trigrams']);
                 if ($score > 0) {
                     $scores[$recordId] = $score;
                 }
@@ -121,10 +140,11 @@ class RecordRepo extends Repository implements ApiSearchInterface
         }
 
         arsort($scores, SORT_NUMERIC);
-        $ids = array_slice([
-            ...array_keys($substringMatches),
-            ...array_keys($scores),
-        ], 0, 50);
+        $ids = array_slice(
+            array_merge(array_keys($substringMatches), array_keys($scores)),
+            0,
+            50
+        );
 
         if ($ids === []) {
             return [];
@@ -323,9 +343,8 @@ class RecordRepo extends Repository implements ApiSearchInterface
         return $languages;
     }
 
-    private function trigramSimilarity(array $queryNgrams, string $text): float
+    private function trigramSimilarity(array $queryNgrams, array $candidateNgrams): float
     {
-        $candidateNgrams = $this->trigrams($text);
         if ($candidateNgrams === []) {
             return 0.0;
         }
@@ -362,7 +381,9 @@ class RecordRepo extends Repository implements ApiSearchInterface
 
     public function commit(Transaction $transaction): void
     {
-        $this->cache->delete("language-" . Current::getProject()->id());
+        $projectId = Current::getProject()->id();
+        $this->cache->delete("language-" . $projectId);
+        $this->cache->delete("record-similar-" . $projectId);
         parent::commit($transaction);
     }
 
