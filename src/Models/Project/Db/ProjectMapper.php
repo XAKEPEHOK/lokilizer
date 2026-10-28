@@ -34,6 +34,7 @@ class ProjectMapper extends ModelMapper
             ])),
             'primaryLanguage' => LanguageMapper::getInstance(),
             'secondaryLanguage' => new NullOrMapper(LanguageMapper::getInstance()),
+            'mcpToken' => new NullOrMapper(StringMapper::getInstance()),
             'defaultLLM' => ReferenceMapper::getInstanceEager(),
             'placeholders' => new EnumMapper(PlaceholderFormat::class, StringMapper::getInstance()),
             'eol' => new EnumMapper(EOLFormat::class, StringMapper::getInstance()),

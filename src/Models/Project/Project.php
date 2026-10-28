@@ -36,6 +36,8 @@ class Project implements ModelInterface, ModelBeforeCommitEventInterface
 
     protected ?LanguageAlpha2 $secondaryLanguage = null;
 
+    protected ?string $mcpToken = null;
+
     protected ?Reference $defaultLLM = null;
 
     protected FloatPool $balance;
@@ -140,6 +142,26 @@ class Project implements ModelInterface, ModelBeforeCommitEventInterface
     public function setSecondaryLanguage(?LanguageAlpha2 $secondary): void
     {
         $this->secondaryLanguage = $secondary;
+    }
+
+    public function getMcpToken(): ?string
+    {
+        return $this->mcpToken;
+    }
+
+    public function setMcpToken(?string $mcpToken): void
+    {
+        $mcpToken = trim((string) $mcpToken);
+        if ($mcpToken === '') {
+            $this->mcpToken = null;
+            return;
+        }
+
+        if (mb_strlen($mcpToken) < 10) {
+            throw new \RuntimeException('MCP token must be at least 10 characters long');
+        }
+
+        $this->mcpToken = $mcpToken;
     }
 
     /**

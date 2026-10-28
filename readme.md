@@ -117,6 +117,34 @@ Regardless of validation, a user can manually mark a string as verified, which a
 
 ---
 
+## 🤖 MCP server for external agents
+
+Lokilizer exposes a read-only [Model Context Protocol](https://modelcontextprotocol.io/) server for every project. In **Project settings**, enter a Bearer token of at least 10 characters or generate one with the **Generate** button, then connect your agent to `https://<domain>/mcp/<projectId>`. Leave the token empty to disable MCP.
+
+Example client configuration:
+
+```json
+{
+  "mcpServers": {
+    "lokilizer": {
+      "type": "http",
+      "url": "https://<domain>/mcp/<projectId>",
+      "headers": {
+        "Authorization": "Bearer <project-token>"
+      }
+    }
+  }
+}
+```
+
+Available tools:
+
+- `get_languages` — lists ISO 639-1 language codes and identifies `primary` and optional `secondary`; agents should call it once per session.
+- `get_glossaries` — returns the application-wide primary glossary and contextual special glossaries. Special terminology applies only to the features or pages identified by `keyPrefix` and `summary`. Results include primary, optional secondary, and the working language requested via `language`.
+- `search_ui_strings` — finds current records by value across all languages or only in `searchLanguage`. Use it for terminology context and for instructions involving menu items or navigation paths. Results are paginated by 50 records via `page` and include the key, primary-language comment, primary and optional secondary values, plus `searchLanguage` and `resultLanguage` when provided. Results are not relevance-scored; agents should refine the query or use pagination to inspect additional matches.
+
+---
+
 ## 🏢 Projects, Users & Roles
 
 - Unlimited projects, with isolation of translations and all related data.

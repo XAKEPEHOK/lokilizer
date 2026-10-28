@@ -109,6 +109,30 @@ $update = isset($update) && boolval($update);
             </select>
         </div>
 
+        <?php if ($update === true): ?>
+        <div class="mb-3">
+            <label for="mcp-token" class="form-label">MCP Bearer token</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="mcp-token" name="mcpToken" value="<?=$this->e($form['mcpToken'])?>" minlength="10" autocomplete="off">
+                <button class="btn btn-outline-secondary" type="button" id="mcp-token-generate">Generate</button>
+            </div>
+            <div class="form-text">
+                Leave empty to disable MCP.<br>
+                MCP endpoint: <code><?=$this->e(RouteUri::home() . 'mcp/' . Current::getProject()->id())?></code>
+            </div>
+        </div>
+        <script>
+            document.getElementById('mcp-token-generate').addEventListener('click', () => {
+                const bytes = new Uint8Array(32);
+                window.crypto.getRandomValues(bytes);
+                document.getElementById('mcp-token').value = btoa(String.fromCharCode(...bytes))
+                    .replaceAll('+', '-')
+                    .replaceAll('/', '_')
+                    .replaceAll('=', '');
+            });
+        </script>
+        <?php endif; ?>
+
         <button type="submit" class="btn btn-primary mt-3"><?=$this->e($button)?></button>
     </div>
 </form>

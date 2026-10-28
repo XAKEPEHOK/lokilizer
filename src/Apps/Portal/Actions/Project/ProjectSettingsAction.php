@@ -47,6 +47,7 @@ class ProjectSettingsAction extends RenderAction
             'placeholders' => $request->getParsedBodyParam('placeholders', $project->getPlaceholdersFormat()->value),
             'eol' => $request->getParsedBodyParam('eol', base64_encode($project->getEOLFormat()->value)),
             'fileFormatter' => $request->getParsedBodyParam('fileFormatter', FileFormatter::I18NEXT->value),
+            'mcpToken' => trim($request->getParsedBodyParam('mcpToken', $project->getMcpToken() ?? '')),
         ];
 
         $error = '';
@@ -87,6 +88,7 @@ class ProjectSettingsAction extends RenderAction
                 $project->setPlaceholders($placeholders);
                 $project->setEOLFormat($eol);
                 $project->setFileFormatter($fileFormat);
+                $project->setMcpToken($params['mcpToken']);
                 $project->setDefaultLLM(Current::getLLMEndpoints()[$params['llm']]);
 
                 $this->modelManager->commit(new Transaction([$project]));

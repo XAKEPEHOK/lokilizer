@@ -7,6 +7,7 @@
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\GettingStartedAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\LLM\LLMAddAction;
 use XAKEPEHOK\Lokilizer\Apps\Http\Components\ErrorHandler;
+use XAKEPEHOK\Lokilizer\Apps\Mcp\McpAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Auth\LogoutAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Backup\BackupRestoreAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Batch\BatchAISuggestAction;
@@ -15,7 +16,6 @@ use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Batch\BatchModifyAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Batch\BatchAITranslateAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Dev\DevAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryBuildAction;
-use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryJsonAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryListAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryUpdateAction;
 use XAKEPEHOK\Lokilizer\Apps\Portal\Actions\Glossary\GlossaryUsageAction;
@@ -76,7 +76,7 @@ $app->map(['GET', 'POST'], '/signup', SignupAction::class);
 $app->map(['GET', 'POST'], '/login', LoginAction::class);
 $app->map(['GET', 'POST'], '/logout', LogoutAction::class);
 
-$app->get('/project/{projectId}/glossary.json', GlossaryJsonAction::class);
+$app->map(['GET', 'POST', 'DELETE'], '/mcp/{projectId}', McpAction::class);
 
 $app->group('', function (RouteCollectorProxy $group) use ($container) {
     $group->get('/[project[/]]', ProjectListAction::class);

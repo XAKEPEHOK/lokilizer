@@ -54,7 +54,9 @@
         "spomky-labs/otphp": "^10.0",
         "prinsfrank/standards": "^3.3",
         "php-dto/email-address": "^0.1.1",
-        "behat/transliterator": "^1.5"
+        "behat/transliterator": "^1.5",
+        "mcp/sdk": "^0.9.0",
+        "psr/simple-cache": "^3.0"
     },
     "config": {
         "allow-plugins": {
