@@ -28,7 +28,8 @@ use XAKEPEHOK\Lokilizer\Components\Current;
                 <a class="dropdown-item" href="<?=$route('profile/password', false)?>">Change password</a>
             </li>
             <li>
-                <a target="_blank" class="dropdown-item" href="<?=$route('logout', false)?>">Logout</a>
+                <!-- Убрали target="_blank" и добавили id для поиска в JS -->
+                <a id="logout-link" class="dropdown-item" href="<?=$route('logout', false)?>">Logout</a>
             </li>
             <li><hr class="dropdown-divider"></li>
             <li>
