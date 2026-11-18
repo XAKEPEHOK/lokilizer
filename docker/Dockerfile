@@ -161,7 +161,7 @@ RUN set -x \
 FROM traefik:v2.6 AS traefik
 
 ### NGINX ###
-FROM nginx:1.23-alpine AS nginx
+FROM nginx:1.30-alpine AS nginx
 
 ARG LOKILIZER_DOCKER_UID
 ARG LOKILIZER_DOCKER_GID
